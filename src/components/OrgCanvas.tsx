@@ -6,8 +6,9 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  useReactFlow,
 } from "@xyflow/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { snapshotToFlow, type OrgMapView } from "@/lib/layout-graph";
 import { STATUS_COLOR, isProblemStatus } from "@/lib/status-style";
 import type { OrgSnapshot } from "@/lib/types";
@@ -61,6 +62,7 @@ function OrgCanvasInner({
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const { fitView } = useReactFlow();
   const flow = useMemo(() => {
     const laid = snapshotToFlow(snapshot, view);
     return {
@@ -80,17 +82,26 @@ function OrgCanvasInner({
     };
   }, [snapshot, view, hygiene, selectedId]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fitView({ padding: 0.18, duration: 180 });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [fitView, view, snapshot.orgId, snapshot.pushedAt, flow.nodes.length]);
+
   return (
     <div className="org-flow">
       <ReactFlow
-        key={`${snapshot.orgId}-${view}`}
         nodes={flow.nodes}
         edges={flow.edges}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.22 }}
-        minZoom={0.35}
+        fitViewOptions={{ padding: 0.18 }}
+        minZoom={0.55}
         maxZoom={1.6}
+        onInit={(instance) => {
+          void instance.fitView({ padding: 0.18 });
+        }}
         onNodeClick={(_event, node) => onSelect(node.id)}
         nodesConnectable={false}
         edgesFocusable={false}

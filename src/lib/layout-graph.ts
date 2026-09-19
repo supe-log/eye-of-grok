@@ -188,7 +188,20 @@ function wrapWideRanks(nodes: Node<OrgFlowNodeData>[]): Node<OrgFlowNodeData>[] 
     yShift += extraRows * rowHeight;
   }
 
-  return next;
+  return normalizeOrigin(next);
+}
+
+function normalizeOrigin(nodes: Node<OrgFlowNodeData>[]): Node<OrgFlowNodeData>[] {
+  if (nodes.length === 0) return nodes;
+  const minX = Math.min(...nodes.map((node) => node.position.x));
+  const minY = Math.min(...nodes.map((node) => node.position.y));
+  return nodes.map((node) => ({
+    ...node,
+    position: {
+      x: node.position.x - minX + 24,
+      y: node.position.y - minY + 24,
+    },
+  }));
 }
 
 function visibleIds(snapshot: OrgSnapshot, view: OrgMapView): Set<string> {
