@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Eye of Grok",
-  description: "Canvas-style Grok Bot org map: bots, sidebar sections, and group rooms.",
+  description: "Canvas-style Grok Bot org map: claim a slug, paste one Chief of Staff message, open the fleet canvas.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

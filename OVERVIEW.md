@@ -2,6 +2,8 @@
 
 Read this file first. It is the high-level picture of the hackathon project. Details live in [README.md](README.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DEMO.md](DEMO.md), and [TEAM.md](TEAM.md).
 
+**How the product actually works:** [README — How it works (end to end)](README.md#how-it-works-end-to-end). That section is the claim → CoS → `/u/slug` loop and the PR → `main` → deploy loop. Read it before the API tables.
+
 Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)
 
 ## One sentence
@@ -36,13 +38,13 @@ Do not look for Analyze in the UI this weekend unless the team agrees and an xAI
 
 | Now | Parked |
 | --- | --- |
-| Interactive org map (React Flow) | Grok 4.6 analyze / lean-up (code exists, UI hidden) |
+| Interactive canvas org map | Grok 4.6 analyze / lean-up (code exists, UI hidden) |
 | Edit bots and spaces in the browser | Live import from the Grok Bot app |
 | Status colors + Flag stale | Hide/delete against real Grok Bot |
 | Mermaid export | Multi-tenant / many humans |
-| REST + MCP ingest | Required xAI key |
+| REST + MCP ingest, per-slug claim + unique write tokens | Required xAI key |
 
-Default org id is `mine`. Starter graph is only Logan. Live maps persist in Neon (`org_snapshots` + revision history). Local fallback without `DATABASE_URL` is `data/orgs/` (gitignored).
+Default **demo** org id is `mine` (Logan). Everyone else claims `/u/<slug>` (`logan` taken → offer `logan1`). Maps are public to browse. Live maps persist in Neon (`org_snapshots` + revision history). Local fallback without `DATABASE_URL` is `data/orgs/` (gitignored).
 
 ## Data model (source of truth)
 
@@ -56,9 +58,9 @@ Do not store transcripts or raw memory. The map is a **claimed** org. If the Chi
 
 ## How pieces talk
 
-Human in the UI (Edit or paste JSON) and the Chief of Staff (`POST` snapshot or MCP) hit the Next.js API. The API upserts that slug in Neon and appends a revision. The map and Mermaid export both read the latest snapshot.
+Human in the UI (Edit or paste JSON) and the Chief of Staff (`POST` snapshot or MCP) hit the Next.js API. The API writes that **slug's** record (`{ slug, tokenHash, snapshot }`) in Neon and appends a revision. The canvas map and Mermaid export both read the latest snapshot.
 
-Writes need `Authorization: Bearer <INGEST_TOKEN>`. Local default is `hackathon-demo`.
+Writes to a claimed org need `Authorization: Bearer <that org's token>`. Logan's `/u/mine` uses `INGEST_TOKEN` (local default `hackathon-demo`). Loopback `/api/local/snapshot` stays token-free and still writes `mine`.
 
 ## Product rules we are not breaking
 
@@ -71,7 +73,7 @@ Writes need `Authorization: Bearer <INGEST_TOKEN>`. Local default is `hackathon-
 
 ## Stack
 
-Next.js 16, React 19, Tailwind 4, React Flow, dagre, Mermaid, Zod, MCP SDK. No Supabase. No xAI key for the visualizer MVP.
+Next.js 16, React 19, Tailwind 4, canvas DAG, dagre, Mermaid, Zod, MCP SDK, Neon. No Supabase. No xAI key for the visualizer MVP.
 
 ## Where to go next
 

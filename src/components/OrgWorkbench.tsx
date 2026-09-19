@@ -16,6 +16,7 @@ import type { OrgCanvasView } from "@/lib/layout-graph";
 import { snapshotToMermaid } from "@/lib/mermaid";
 import { snapshotCapacity } from "@/lib/capacity";
 import {
+  DEFAULT_ORG_ID,
   EDGE_KINDS,
   NODE_KINDS,
   NODE_STATUSES,
@@ -26,6 +27,7 @@ import {
   type OrgSnapshot,
 } from "@/lib/types";
 import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, relativeTime } from "@/lib/status-style";
+import { readStoredIngestToken, writeStoredIngestToken } from "@/lib/client-token";
 import { MermaidView } from "./MermaidView";
 import { OrgCanvas } from "./OrgCanvas";
 
@@ -44,7 +46,14 @@ export function OrgWorkbench({
   const [hygiene, setHygiene] = useState(false);
   const [view, setView] = useState<OrgCanvasView>("reports");
   const [tab, setTab] = useState<Tab>("live");
-  const [ingestToken, setIngestToken] = useState("hackathon-demo");
+  const [ingestToken, setIngestToken] = useState(() => {
+    const stored = readStoredIngestToken(initialSnapshot.orgId);
+    if (stored) return stored;
+    if (typeof window === "undefined") return "";
+    const local = /localhost|127\.0\.0\.1/.test(window.location.hostname);
+    if (initialSnapshot.orgId === DEFAULT_ORG_ID && local) return "hackathon-demo";
+    return "";
+  });
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [livePulse, setLivePulse] = useState(false);
@@ -76,7 +85,7 @@ export function OrgWorkbench({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${ingestToken}`,
+            ...(ingestToken ? { Authorization: `Bearer ${ingestToken}` } : {}),
           },
           body: JSON.stringify(next),
         });
@@ -585,17 +594,19 @@ function LivePanel({
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const owner =
     snapshot.nodes.find((node) => node.kind === "human")?.name ?? snapshot.orgId;
-  const prompt = origin
-    ? createBotSharePrompt({
-        origin,
-        orgId: snapshot.orgId,
-        token,
-        ownerName: owner,
-      })
-    : CASEY_LOCAL_PROMPT;
-  const speak = origin
-    ? createBotSpeakLine({ origin, orgId: snapshot.orgId, token })
-    : CASEY_LOCAL_PROMPT;
+  const prompt =
+    origin && token
+      ? createBotSharePrompt({
+          origin,
+          orgId: snapshot.orgId,
+          token,
+          ownerName: owner,
+        })
+      : CASEY_LOCAL_PROMPT;
+  const speak =
+    origin && token
+      ? createBotSpeakLine({ origin, orgId: snapshot.orgId, token })
+      : CASEY_LOCAL_PROMPT;
   const loopback = /localhost|127\.0\.0\.1/.test(origin);
   const [revisions, setRevisions] = useState<OrgRevision[]>([]);
   const [restoreBusy, setRestoreBusy] = useState<number | null>(null);
@@ -629,12 +640,19 @@ function LivePanel({
         <code>
           {origin ? snapshotPostUrl(origin, snapshot.orgId) : `/api/orgs/${snapshot.orgId}/snapshot`}
         </code>{" "}
-        with <code>Authorization: Bearer {token}</code>. MCP:{" "}
-        <code>{origin ? mcpUrl(origin) : "/api/mcp"}</code>
+        {token ? (
+          <>
+            with <code>Authorization: Bearer {token}</code>
+          </>
+        ) : (
+          <>after you paste this org&apos;s write token below</>
+        )}
+        . MCP: <code>{origin ? mcpUrl(origin) : "/api/mcp"}</code>
       </p>
       <button
         type="button"
         className="btn"
+        disabled={!token}
         onClick={() => void navigator.clipboard.writeText(speak)}
       >
         Copy Chief of Staff message
@@ -664,8 +682,17 @@ function LivePanel({
         </>
       )}
       <label className="field">
-        <span>Bearer for phone / cloud / MCP</span>
-        <input value={token} onChange={(event) => onToken(event.target.value)} />
+        <span>Write token for this org (from claim — not a global demo secret)</span>
+        <input
+          value={token}
+          onChange={(event) => {
+            onToken(event.target.value);
+            if (event.target.value.trim()) {
+              writeStoredIngestToken(snapshot.orgId, event.target.value.trim());
+            }
+          }}
+          placeholder="eog_… or INGEST_TOKEN for /u/mine"
+        />
       </label>
       <p className="muted">
         <Link href="/">Claim a different slug</Link>

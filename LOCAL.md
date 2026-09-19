@@ -1,6 +1,6 @@
 # Live ingest
 
-Public share: people claim `/u/<slug>` on the home page and paste **Copy Bot prompt** into their Grok Bot. Writes go to `POST /api/orgs/<slug>/snapshot` with bearer `hackathon-demo`. MCP is `/api/mcp`.
+Public share: people claim `/u/<slug>` on the home page and paste **Copy Chief of Staff message** into their Grok Bot. That click mints a unique write token. Writes go to `POST /api/orgs/<slug>/snapshot` with `Authorization: Bearer <that-org-token>`. MCP is `/api/mcp` with the same bearer. The prompt is scoped to *their* org — not Logan's `mine` token.
 
 # This Mac only (localhost:3002)
 
@@ -19,28 +19,33 @@ Content-Type: application/json
 
 Loopback only (`127.0.0.1`, `localhost`, IPv4-mapped `::ffff:127.0.0.1`). No bearer token.
 
-Same body as `POST /api/orgs/mine/snapshot`. Always written to org `mine`.
+Same body as `POST /api/orgs/mine/snapshot`. Always written to org `mine`. **Unchanged from the original Mac demo.**
+
+Loopback `POST /api/orgs/<slug>/snapshot` is also token-light (any claimed slug) so laptop Edit / curl still works without pasting a bearer.
 
 ## What to tell Casey
 
-Open the **Live** tab and click **Copy Casey prompt**, or `GET http://127.0.0.1:3002/api/local/snapshot` and use the `prompt` field.
+Open the **Live** tab and click **Copy Logan local prompt**, or `GET http://127.0.0.1:3002/api/local/snapshot` and use the `prompt` field.
 
-## Where the key is
+## Where the keys are
 
-There is **no xAI key** on this project. The only secret for Bot write access is `INGEST_TOKEN`.
+There is **no xAI key** on this project.
 
 | Place | Value |
 | --- | --- |
-| [`.env.example`](.env.example) | `INGEST_TOKEN=hackathon-demo` (this is the checked-in default) |
-| [`.env.local`](.env.local) | Does **not** exist yet. Create it only if you want a different token |
-| [`src/lib/auth.ts`](src/lib/auth.ts) | `process.env.INGEST_TOKEN ?? "hackathon-demo"` — if env is missing, this default is used |
+| [`.env.example`](.env.example) | `INGEST_TOKEN=hackathon-demo` for `/u/mine` only. `DATABASE_URL=` for Neon (primary durable store) |
+| [`.env.local`](.env.local) | Create to override `INGEST_TOKEN`, add `DATABASE_URL`, or turn analyze on |
+| Claimed orgs | Unique `eog_…` token minted on `POST /api/orgs/claim`. Server stores a SHA-256 hash |
+| [`src/lib/tokens.ts`](src/lib/tokens.ts) | Local default `hackathon-demo` for `mine` when `INGEST_TOKEN` and `VERCEL` are unset |
 
 On **this Mac**, Casey POSTs to `/api/local/snapshot` and needs **no token**.  
-On **phone / cloud / any other machine**, the Bot must send:
+On **phone / cloud / any other machine**, each Bot must send **that org's** bearer (from the home-page copy prompt). Logan's public `/u/mine` still uses:
 
 ```http
-Authorization: Bearer hackathon-demo
+Authorization: Bearer <INGEST_TOKEN>
 ```
+
+`hackathon-demo` is **not** a write path for other slugs.
 
 `XAI_API_KEY` / `GROK_API_KEY` in `.env.example` are only for the parked analyze pass. Leave them blank.
 
@@ -48,26 +53,31 @@ Authorization: Bearer hackathon-demo
 
 `localhost:3002` is this laptop only. Grok Bot’s MCP client and the phone app **cannot** see it.
 
-**Easiest live path:** put the site on a public HTTPS URL, then give Log that URL + the bearer. Do **not** use unofficial Grok Bot CLIs (they only work on this Mac’s session and do not help the phone). Giving the GitHub repo lets a Bot *read the schema and the last committed roster*; it does not give a live map.
+**Easiest live path:** deploy the site, attach a Vercel Blob store, then each person claims a slug.
 
 | Path | Works from phone? | Laptop must stay on? | What you give the Bot |
 | --- | --- | --- | --- |
-| `http://127.0.0.1:3002` | No | Yes | Local prompt only |
-| Tunnel (ngrok / Cloudflare) to :3002 | Yes | Yes | Public URL + bearer |
-| Deployed site (Vercel) | Yes | No | Public URL + bearer + optional MCP |
+| `http://127.0.0.1:3002` | No | Yes | Local Casey prompt only (`mine`) |
+| Tunnel (ngrok / Cloudflare) to :3002 | Yes | Yes | Public URL + **that org's** bearer |
+| Deployed site (Vercel + Blob) | Yes | No | Claim prompt (URL + unique token) + optional MCP |
 
 Once you have a public origin `https://YOUR-HOST`:
 
 ```
 Open:     https://YOUR-HOST
-Read:     GET https://YOUR-HOST/api/orgs/mine
-Picture:  GET https://YOUR-HOST/api/orgs/mine/mermaid
-Write:    POST https://YOUR-HOST/api/orgs/mine/snapshot
-Header:   Authorization: Bearer hackathon-demo
-MCP:      https://YOUR-HOST/api/mcp   (same bearer on writes)
+Claim:    type your name → Copy Chief of Staff message
+Read:     GET https://YOUR-HOST/api/orgs/<slug>
+Picture:  GET https://YOUR-HOST/api/orgs/<slug>/mermaid
+Write:    POST https://YOUR-HOST/api/orgs/<slug>/snapshot
+Header:   Authorization: Bearer <that-org-token>
+Rotate:   POST https://YOUR-HOST/api/orgs/<slug>/rotate   (same bearer)
+MCP:      https://YOUR-HOST/api/mcp   (same bearer; writes stay on that org)
+Health:   GET https://YOUR-HOST/api/health
 ```
 
-Paste that card into Log. Do not add `http://localhost:3002/api/mcp` as a remote MCP server.
+Logan's demo: replace `<slug>` with `mine` and the token with `INGEST_TOKEN`.
+
+Do not add `http://localhost:3002/api/mcp` as a remote MCP server.
 
 ## What will not work
 
@@ -77,3 +87,4 @@ Paste that card into Log. Do not add `http://localhost:3002/api/mcp` as a remote
 | grok.com connectors | Different product |
 | Cursor `mcp.json` / Grok Build `grok mcp` | Not Grok Bot |
 | Official “list my bots” API | Does not exist |
+| Sharing `hackathon-demo` with another human | That token is only Logan's local/demo `mine` write secret |

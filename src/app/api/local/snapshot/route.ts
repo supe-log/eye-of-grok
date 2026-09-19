@@ -6,24 +6,30 @@ import {
   publicOrigin,
 } from "@/lib/casey-prompt";
 import { isLoopbackRequest } from "@/lib/loopback";
-import { upsertOrg } from "@/lib/store";
+import { ensureMineOrg, getStoreInfo, upsertOrg } from "@/lib/store";
+import { getMineIngestToken } from "@/lib/tokens";
 import { DEFAULT_ORG_ID } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const mineToken = getMineIngestToken();
   return NextResponse.json({
     url: LOCAL_SNAPSHOT_URL,
     loopback: isLoopbackRequest(request),
     orgId: DEFAULT_ORG_ID,
+    store: getStoreInfo(),
     prompt: CASEY_LOCAL_PROMPT,
-    publicPrompt: createBotSharePrompt({
-      origin: publicOrigin(),
-      orgId: DEFAULT_ORG_ID,
-      ownerName: "Logan May",
-    }),
-    note: "Grok Bot cloud MCP cannot see localhost. On this Mac, a Bot with local egress POSTs here. For a public URL, use publicPrompt or GET /api/share/mine.",
+    publicPrompt: mineToken
+      ? createBotSharePrompt({
+          origin: publicOrigin(),
+          orgId: DEFAULT_ORG_ID,
+          token: mineToken,
+          ownerName: "Logan May",
+        })
+      : null,
+    note: "Grok Bot cloud MCP cannot see localhost. On this Mac, a Bot with local egress POSTs here with no bearer. Other people should claim a slug on the home page and use that org's token — not this loopback door.",
   });
 }
 
@@ -32,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "loopback_only",
-        hint: "This ingest is only for 127.0.0.1 / localhost. Use /api/orgs/mine/snapshot with a bearer token from elsewhere.",
+        hint: "This ingest is only for 127.0.0.1 / localhost. Claim a slug and POST /api/orgs/<slug>/snapshot with that org's bearer from elsewhere.",
       },
       { status: 403 },
     );
@@ -46,6 +52,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    await ensureMineOrg();
     const snapshot = await upsertOrg(DEFAULT_ORG_ID, body, "chief_of_staff");
     return NextResponse.json(snapshot);
   } catch (error) {

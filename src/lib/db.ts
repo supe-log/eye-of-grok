@@ -31,6 +31,18 @@ export async function ensureSnapshotSchema(): Promise<void> {
     )
   `;
   await client`
+    ALTER TABLE org_snapshots ADD COLUMN IF NOT EXISTS token_hash TEXT
+  `;
+  await client`
+    ALTER TABLE org_snapshots ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMPTZ
+  `;
+  await client`
+    ALTER TABLE org_snapshots ADD COLUMN IF NOT EXISTS owner_name TEXT
+  `;
+  await client`
+    ALTER TABLE org_snapshots ADD COLUMN IF NOT EXISTS anonymous BOOLEAN NOT NULL DEFAULT false
+  `;
+  await client`
     CREATE TABLE IF NOT EXISTS org_snapshot_revisions (
       id BIGSERIAL PRIMARY KEY,
       org_id TEXT NOT NULL,
@@ -44,5 +56,20 @@ export async function ensureSnapshotSchema(): Promise<void> {
     CREATE INDEX IF NOT EXISTS org_snapshot_revisions_org_id_id_desc
     ON org_snapshot_revisions (org_id, id DESC)
   `;
+  await client`
+    CREATE TABLE IF NOT EXISTS org_token_index (
+      token_hash TEXT PRIMARY KEY,
+      org_id TEXT NOT NULL
+    )
+  `;
   schemaReady = true;
+}
+
+export function toIso(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+  }
+  return new Date().toISOString();
 }
