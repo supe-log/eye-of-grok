@@ -1,12 +1,12 @@
 import { Graph, layout } from "@dagrejs/dagre";
-import { Position, type Edge, type Node } from "@xyflow/react";
+import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
 import type { CSSProperties } from "react";
 import { GROUP_MEMBER_LIMIT, type OrgEdge, type OrgNode, type OrgSnapshot } from "./types";
 
-export const BOT_NODE_W = 196;
-export const BOT_NODE_H = 76;
-export const GROUP_NODE_W = 220;
-export const GROUP_NODE_H = 80;
+export const BOT_NODE_W = 176;
+export const BOT_NODE_H = 72;
+export const GROUP_NODE_W = 188;
+export const GROUP_NODE_H = 72;
 
 export type OrgMapView = "all" | "reports" | "spaces";
 
@@ -65,7 +65,7 @@ export function snapshotToFlow(
       g.setEdge(edge.to, edge.from);
       continue;
     }
-    if (edge.kind === "member_of") {
+    if (edge.kind === "member_of" && view === "all") {
       g.setEdge(edge.from, edge.to);
     }
   }
@@ -94,6 +94,8 @@ export function snapshotToFlow(
     data: { orgNode: node.orgNode },
     sourcePosition: Position.Right,
     targetPosition: Position.Left,
+    width: node.width,
+    height: node.height,
     style: { width: node.width, height: node.height },
   }));
 
@@ -109,6 +111,15 @@ export function snapshotToFlow(
         animated: orgEdge.kind === "handoff",
         className: `edge-${orgEdge.kind}`,
         style: edgeStyle(orgEdge.kind),
+        markerEnd:
+          orgEdge.kind === "handoff"
+            ? {
+                type: MarkerType.ArrowClosed,
+                color: "#4c8bf5",
+                width: 16,
+                height: 16,
+              }
+            : undefined,
       },
     ];
   });
@@ -249,7 +260,7 @@ function edgeStyle(kind: OrgEdge["kind"]): CSSProperties {
     case "member_of":
       return { stroke: "#3fb950", strokeWidth: 1.2, strokeDasharray: "5 4" };
     case "handoff":
-      return { stroke: "#4c8bf5", strokeWidth: 1.6 };
+      return { stroke: "#4c8bf5", strokeWidth: 1.8 };
     case "shares_context":
       return { stroke: "#c9ccd1", strokeWidth: 1.1, strokeDasharray: "2 4" };
     default: {

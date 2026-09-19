@@ -84,6 +84,7 @@ function FlowBoard({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [maxColumnHeight, setMaxColumnHeight] = useState(640);
+  const { fitView } = useReactFlow();
 
   useEffect(() => {
     const host = hostRef.current;
@@ -133,10 +134,16 @@ function FlowBoard({
       ? EDGE_LEGEND.filter((item) => item.kind !== "member_of")
       : EDGE_LEGEND;
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fitView({ ...FIT_VIEW, duration: 180 });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [fitView, view, snapshot.orgId, snapshot.pushedAt, flow.nodes.length, maxColumnHeight]);
+
   return (
     <div className="org-flow" data-focus={Boolean(selectedId)} ref={hostRef}>
       <ReactFlow
-        key={`${snapshot.orgId}-${view}-${maxColumnHeight}`}
         nodes={flow.nodes}
         edges={flow.edges}
         nodeTypes={nodeTypes}
@@ -144,7 +151,9 @@ function FlowBoard({
         fitViewOptions={FIT_VIEW}
         minZoom={0.2}
         maxZoom={1.6}
-        onInit={(instance) => instance.fitView(FIT_VIEW)}
+        onInit={(instance) => {
+          void instance.fitView(FIT_VIEW);
+        }}
         onNodeClick={(_event, node) => onSelect(node.id)}
         onPaneClick={() => onSelect(null)}
         nodesConnectable={false}
@@ -155,7 +164,10 @@ function FlowBoard({
           pannable
           zoomable
           maskColor="var(--minimap-mask)"
-          nodeColor={(node: OrgFlowNode) => STATUS_COLOR[node.data.orgNode.status]}
+          nodeColor={(node: OrgFlowNode) => {
+            const status = node.data?.orgNode?.status;
+            return status ? STATUS_COLOR[status] : "#8a8f98";
+          }}
         />
         <Controls showInteractive={false}>
           <ResetViewButton onClear={() => onSelect(null)} />
