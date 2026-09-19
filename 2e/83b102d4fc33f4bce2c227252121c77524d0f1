@@ -1,0 +1,62 @@
+src/lib/types.ts
+  s_2fb72e597b9f00::t_448777b99fa5ea 55-62
+package.json
+  s_2fb72e597b9f00::t_b593bb18bd7589 14
+src/app/api/orgs/[id]/analyze/route.ts
+  s_2fb72e597b9f00::t_1d15a16454d902 13
+src/app/u/[orgId]/page.tsx
+  s_2fb72e597b9f00::t_488cf9dc4f4751 16
+src/app/api/orgs/[id]/snapshot/route.ts
+  s_2fb72e597b9f00::t_e0af372996fe41 23
+src/components/OrgWorkbench.tsx
+  s_2fb72e597b9f00::t_37c5439aba58a1 267-271
+  s_2fb72e597b9f00::t_88f8e66de9f31d 25
+  s_2fb72e597b9f00::t_9241175146563b 673-724
+  s_2fb72e597b9f00::t_3b0835afec7bbe 600-616
+  s_2fb72e597b9f00::t_d037d1435fe349 577,583
+README.md
+  s_2fb72e597b9f00::t_ab9cf5aa10fddc 89
+  s_2fb72e597b9f00::t_38827a341059cc 147
+src/app/api/orgs/[id]/revisions/route.ts
+  s_2fb72e597b9f00::t_97bd182f09e3b1 1-49
+src/lib/store.ts
+  s_2fb72e597b9f00::t_636c900fa2eabc 3,8-12,14,29-30,33-39,42-50,55,58,66,70,85-189
+src/app/api/local/snapshot/route.ts
+  s_2fb72e597b9f00::t_5673f22c16c6d4 49
+.env.example
+  s_2fb72e597b9f00::t_8fad878686316a 10-12
+src/app/api/orgs/[id]/route.ts
+  s_2fb72e597b9f00::t_5b60539ae172c3 14,16
+src/app/api/orgs/[id]/mermaid/route.ts
+  s_2fb72e597b9f00::t_50594a5050296a 13
+ARCHITECTURE.md
+  s_2fb72e597b9f00::t_ebf6e0499cd035 67
+  s_2fb72e597b9f00::t_c4ca2e137da422 88-89
+OVERVIEW.md
+  s_2fb72e597b9f00::t_4306d06f193f81 45
+  s_2fb72e597b9f00::t_e6d3f2f071c0af 59
+src/lib/db.ts
+  s_2fb72e597b9f00::t_621aa835a666fc 1-48
+src/lib/mcp-server.ts
+  s_2fb72e597b9f00::t_e944488654f8e3 27
+  s_2fb72e597b9f00::t_6ea9e7ae87c2c3 56
+  s_2fb72e597b9f00::t_775ba6af34fae1 88
+package-lock.json
+  s_2fb72e597b9f00::t_eb04e1230f7518 13,1324-1332
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2e83b102d4fc33f4bce2c227252121c77524d0f1",
+  "prompts": {},
+  "sessions": {
+    "s_2fb72e597b9f00": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e47bc951-db0d-44c0-a88f-08acbc3ef17a",
+        "model": "grok-4.6"
+      },
+      "human_author": "Logan May (Work) <loganwork@Logans-MacBook-Pro.local>"
+    }
+  }
+}
