@@ -1,191 +1,129 @@
-import { GROUP_MEMBER_LIMIT, type OrgEdge, type OrgNode, type OrgSnapshot } from "./types";
+import { Graph, layout } from "@dagrejs/dagre";
+import type { Edge, Node } from "@xyflow/react";
+import type { CSSProperties } from "react";
+import type { OrgEdge, OrgNode, OrgSnapshot } from "./types";
 
-export type OrgCanvasView = "reports" | "spaces";
+export const BOT_NODE_W = 196;
+export const BOT_NODE_H = 76;
+export const GROUP_NODE_W = 220;
+export const GROUP_NODE_H = 80;
 
-export const NODE_W = 148;
-export const NODE_H = 48;
-export const NODE_GAP_X = 12;
-export const NODE_GAP_Y = 22;
-export const LAYOUT_PAD = 20;
+export type OrgMapView = "all" | "reports" | "spaces";
 
-export type LaidNode = {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+export type OrgFlowNodeData = {
   orgNode: OrgNode;
+  recommended?: boolean;
+  dimmed?: boolean;
+  linked?: boolean;
 };
 
-export type LaidEdge = {
-  id: string;
-  kind: OrgEdge["kind"];
-  from: string;
-  to: string;
-  sourceX: number;
-  sourceY: number;
-  targetX: number;
-  targetY: number;
+export type OrgFlowEdgeData = {
+  orgEdge: OrgEdge;
 };
 
-export type OrgCanvasLayout = {
-  nodes: LaidNode[];
-  edges: LaidEdge[];
-  width: number;
-  height: number;
-};
-
-export type SpaceCluster = {
-  group: OrgNode;
-  members: OrgNode[];
-};
-
-export function columnsForWidth(width: number): number {
-  const inner = Math.max(280, width) - LAYOUT_PAD * 2;
-  return Math.max(1, Math.floor((inner + NODE_GAP_X) / (NODE_W + NODE_GAP_X)));
+function nodeSize(kind: OrgNode["kind"]): { width: number; height: number } {
+  if (kind === "group") return { width: GROUP_NODE_W, height: GROUP_NODE_H };
+  if (kind === "human") return { width: 168, height: 72 };
+  return { width: BOT_NODE_W, height: BOT_NODE_H };
 }
 
-export function layoutOrgCanvas(
+export function snapshotToFlow(
   snapshot: OrgSnapshot,
-  view: OrgCanvasView,
-  canvasWidth = 720,
-): OrgCanvasLayout {
-  if (view === "spaces") {
-    return { nodes: [], edges: [], width: canvasWidth, height: 200 };
+  view: OrgMapView = "all",
+): {
+  nodes: Node<OrgFlowNodeData>[];
+  edges: Edge<OrgFlowEdgeData>[];
+} {
+  const included = visibleIds(snapshot, view);
+  const nodesInView = snapshot.nodes.filter((node) => included.has(node.id));
+
+  const g = new Graph();
+  g.setDefaultEdgeLabel(() => ({}));
+  g.setGraph({
+    rankdir: "TB",
+    nodesep: 36,
+    ranksep: 78,
+    edgesep: 18,
+    marginx: 24,
+    marginy: 24,
+  });
+
+  for (const node of nodesInView) {
+    const size = nodeSize(node.kind);
+    g.setNode(node.id, { width: size.width, height: size.height });
   }
-  return layoutWrappedReports(snapshot, canvasWidth);
-}
 
-export function layoutWrappedReports(
-  snapshot: OrgSnapshot,
-  canvasWidth: number,
-): OrgCanvasLayout {
-  const people = snapshot.nodes.filter(
-    (node) => node.kind === "human" || node.kind === "bot",
-  );
-  const byId = new Map(people.map((node) => [node.id, node]));
-  const levels = reportLevels(snapshot);
-  const cols = columnsForWidth(canvasWidth);
-  const gridW = cols * NODE_W + Math.max(0, cols - 1) * NODE_GAP_X;
-  const boardW = Math.max(canvasWidth, gridW + LAYOUT_PAD * 2);
-  const originX = Math.max(LAYOUT_PAD, (boardW - gridW) / 2);
-
-  const laidNodes: LaidNode[] = [];
-  let y = LAYOUT_PAD;
-
-  for (const level of levels) {
-    const rows = chunk(level, cols);
-    for (const row of rows) {
-      const rowW = row.length * NODE_W + Math.max(0, row.length - 1) * NODE_GAP_X;
-      const startX = originX + (gridW - rowW) / 2;
-      row.forEach((id, index) => {
-        const orgNode = byId.get(id);
-        if (!orgNode) return;
-        laidNodes.push({
-          id,
-          x: startX + index * (NODE_W + NODE_GAP_X),
-          y,
-          width: NODE_W,
-          height: NODE_H,
-          orgNode,
-        });
-      });
-      y += NODE_H + NODE_GAP_Y;
+  for (const edge of snapshot.edges) {
+    if (!included.has(edge.from) || !included.has(edge.to)) continue;
+    if (edge.kind === "reports_to") {
+      g.setEdge(edge.to, edge.from);
+      continue;
+    }
+    if (edge.kind === "member_of") {
+      g.setEdge(edge.from, edge.to);
     }
   }
 
-  const placed = new Map(laidNodes.map((node) => [node.id, node]));
-  const edges: LaidEdge[] = [];
-  for (const edge of snapshot.edges) {
-    if (edge.kind !== "reports_to") continue;
-    const child = placed.get(edge.from);
-    const parent = placed.get(edge.to);
-    if (!parent || !child) continue;
-    edges.push({
-      id: edge.id,
-      kind: edge.kind,
-      from: edge.from,
-      to: edge.to,
-      sourceX: parent.x + parent.width / 2,
-      sourceY: parent.y + parent.height,
-      targetX: child.x + child.width / 2,
-      targetY: child.y,
-    });
-  }
+  layout(g);
 
-  return {
-    nodes: laidNodes,
-    edges,
-    width: boardW,
-    height: Math.max(LAYOUT_PAD * 2 + NODE_H, y - NODE_GAP_Y + LAYOUT_PAD),
-  };
+  const nodes: Node<OrgFlowNodeData>[] = nodesInView.map((orgNode) => {
+    const placed = g.node(orgNode.id);
+    const size = nodeSize(orgNode.kind);
+    return {
+      id: orgNode.id,
+      type: "org",
+      position: {
+        x: (placed?.x ?? 0) - size.width / 2,
+        y: (placed?.y ?? 0) - size.height / 2,
+      },
+      data: { orgNode },
+      style: { width: size.width, height: size.height },
+    };
+  });
+
+  const edges: Edge<OrgFlowEdgeData>[] = snapshot.edges.flatMap((orgEdge) => {
+    if (!included.has(orgEdge.from) || !included.has(orgEdge.to)) return [];
+    return [
+      {
+        id: orgEdge.id,
+        source: orgEdge.from,
+        target: orgEdge.to,
+        type: "smoothstep",
+        data: { orgEdge },
+        animated: orgEdge.kind === "handoff",
+        className: `edge-${orgEdge.kind}`,
+        style: edgeStyle(orgEdge.kind),
+      },
+    ];
+  });
+
+  return { nodes, edges };
 }
 
-export function spaceClusters(snapshot: OrgSnapshot): SpaceCluster[] {
-  const byId = new Map(snapshot.nodes.map((node) => [node.id, node]));
-  const groups = snapshot.nodes.filter((node) => node.kind === "group");
-  return groups
-    .map((group) => {
-      const memberIds = snapshot.edges
-        .filter((edge) => edge.kind === "member_of" && edge.to === group.id)
-        .map((edge) => edge.from);
-      const members = memberIds
-        .map((id) => byId.get(id))
-        .filter((node): node is OrgNode => Boolean(node));
-      return { group, members };
-    })
-    .sort((a, b) => {
-      const overA = a.members.length > GROUP_MEMBER_LIMIT ? 0 : 1;
-      const overB = b.members.length > GROUP_MEMBER_LIMIT ? 0 : 1;
-      if (overA !== overB) return overA - overB;
-      const staleA = a.group.status === "active" ? 1 : 0;
-      const staleB = b.group.status === "active" ? 1 : 0;
-      if (staleA !== staleB) return staleA - staleB;
-      return a.group.name.localeCompare(b.group.name);
-    });
-}
-
-function reportLevels(snapshot: OrgSnapshot): string[][] {
-  const people = snapshot.nodes.filter(
-    (node) => node.kind === "human" || node.kind === "bot",
-  );
-  const order = new Map(people.map((node, index) => [node.id, index]));
-  const children = new Map<string, string[]>();
-  const peopleIds = new Set(people.map((node) => node.id));
-
-  for (const edge of snapshot.edges) {
-    if (edge.kind !== "reports_to") continue;
-    if (!peopleIds.has(edge.from) || !peopleIds.has(edge.to)) continue;
-    const list = children.get(edge.to) ?? [];
-    list.push(edge.from);
-    children.set(edge.to, list);
+function visibleIds(snapshot: OrgSnapshot, view: OrgMapView): Set<string> {
+  if (view === "all") {
+    return new Set(snapshot.nodes.map((node) => node.id));
   }
 
-  const childIds = new Set([...children.values()].flat());
-  const roots = people
-    .filter((node) => !childIds.has(node.id))
-    .map((node) => node.id)
-    .sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
+  if (view === "reports") {
+    return new Set(
+      snapshot.nodes
+        .filter((node) => node.kind === "human" || node.kind === "bot")
+        .map((node) => node.id),
+    );
+  }
 
-  const levels: string[][] = [];
-  const seen = new Set<string>();
-  let current = roots;
-  while (current.length > 0) {
-    levels.push(current);
-    for (const id of current) seen.add(id);
-    const next: string[] = [];
-    for (const id of current) {
-      for (const child of children.get(id) ?? []) {
-        if (!seen.has(child) && !next.includes(child)) next.push(child);
-      }
+  const ids = new Set<string>();
+  for (const node of snapshot.nodes) {
+    if (node.kind === "group") ids.add(node.id);
+  }
+  for (const edge of snapshot.edges) {
+    if (edge.kind === "member_of") {
+      ids.add(edge.from);
+      ids.add(edge.to);
     }
-    next.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
-    current = next;
   }
-
-  const missing = people.filter((node) => !seen.has(node.id)).map((node) => node.id);
-  if (missing.length > 0) levels.push(missing);
-  return levels;
+  return ids;
 }
 
 export function connectedNeighbors(
@@ -203,10 +141,19 @@ export function connectedNeighbors(
   return { nodeIds, edgeIds };
 }
 
-function chunk<T>(items: T[], size: number): T[][] {
-  const rows: T[][] = [];
-  for (let index = 0; index < items.length; index += size) {
-    rows.push(items.slice(index, index + size));
+function edgeStyle(kind: OrgEdge["kind"]): CSSProperties {
+  switch (kind) {
+    case "reports_to":
+      return { stroke: "#8a8f98", strokeWidth: 1.4 };
+    case "member_of":
+      return { stroke: "#3fb950", strokeWidth: 1.2, strokeDasharray: "5 4" };
+    case "handoff":
+      return { stroke: "#4c8bf5", strokeWidth: 1.6 };
+    case "shares_context":
+      return { stroke: "#c9ccd1", strokeWidth: 1.1, strokeDasharray: "2 4" };
+    default: {
+      const _never: never = kind;
+      return _never;
+    }
   }
-  return rows;
 }
