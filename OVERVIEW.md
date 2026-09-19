@@ -1,6 +1,6 @@
 # Eye of Grok — project overview
 
-Read this file first. It is the high-level picture of the hackathon project. Details live in [README.md](README.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DEMO.md](DEMO.md), and [TEAM.md](TEAM.md).
+Read this file first. It is the high-level picture of the hackathon project. Details live in [README.md](README.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DEMO.md](DEMO.md), [PITCH.md](PITCH.md), and [TEAM.md](TEAM.md).
 
 Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)
 
@@ -80,4 +80,5 @@ Next.js 16, React 19, Tailwind 4, React Flow, dagre, Mermaid, Zod, MCP SDK. No S
 | Clone, run, push | [TEAM.md](TEAM.md) |
 | File map and request flow | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | 30-second walkthrough | [DEMO.md](DEMO.md) |
+| Five-slide pitch | [PITCH.md](PITCH.md) (live `/pitch`) |
 | API table | [README.md](README.md) |

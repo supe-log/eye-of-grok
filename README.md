@@ -10,6 +10,7 @@ Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)
 - Architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Teammates (clone / push): [TEAM.md](TEAM.md)
 - Demo walkthrough: [DEMO.md](DEMO.md)
+- Pitch (five slides): [PITCH.md](PITCH.md) · live `/pitch`
 
 ## Run
 

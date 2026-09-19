@@ -24,6 +24,7 @@ import {
   type OrgSnapshot,
 } from "@/lib/types";
 import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, isProblemStatus, relativeTime } from "@/lib/status-style";
+import Link from "next/link";
 import { MermaidView } from "./MermaidView";
 import { OrgNode, type OrgFlowNode } from "./OrgNode";
 
@@ -137,7 +138,12 @@ function WorkbenchInner({
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">Eye of Grok</span>
-          <span className="brand-sub">Your Grok Bot setup</span>
+          <span className="brand-sub">
+            Your Grok Bot setup
+            <Link className="brand-pitch" href="/pitch">
+              Pitch
+            </Link>
+          </span>
         </div>
         <div className="gauges">
           <Gauge
