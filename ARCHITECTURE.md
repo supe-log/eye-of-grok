@@ -12,7 +12,7 @@ This app is the map you wish the sidebar was.
 
 | Now | Parked |
 | --- | --- |
-| Interactive org map (React Flow) | Grok 4.6 analyze / lean-up (code exists, UI hidden) |
+| Interactive org map (canvas-style DAG) | Grok 4.6 analyze / lean-up (code exists, UI hidden) |
 | Live local ingest: Bot POSTs `http://127.0.0.1:3002/api/local/snapshot` | Official “list my bots” API (does not exist) |
 | Edit your bots and spaces in the browser | Auto-read the encrypted Grok Bot macOS app data |
 | Status colors + “Flag stale” | Hide/delete against real Grok Bot |
@@ -65,7 +65,7 @@ flowchart LR
   Human[Human in the UI] -->|Edit| API
   Casey[Casey on this Mac] -->|POST /api/local/snapshot| API
   API[Next.js API] --> Store[data/orgs/mine.json]
-  Store --> Map[React Flow map polls every 2.5s]
+  Store --> Map[Canvas-style DAG polls every 2.5s]
   Store --> Mermaid[Mermaid export]
 ```
 
@@ -81,8 +81,8 @@ Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <ING
 | --- | --- |
 | `src/app/page.tsx` | Loads `mine` and renders the map |
 | `src/components/OrgWorkbench.tsx` | Map, inspect, edit, mermaid, connect |
-| `src/components/OrgNode.tsx` | Node card |
-| `src/lib/layout-graph.ts` | dagre layout for React Flow |
+| `src/components/OrgCanvas.tsx` | Flat reporting-line / spaces diagram |
+| `src/lib/layout-graph.ts` | dagre layout for the canvas diagram |
 | `src/lib/graph-edit.ts` | Add/remove nodes and links |
 | `src/lib/mermaid.ts` | Snapshot → flowchart |
 | `src/lib/store.ts` | File-backed store |
@@ -104,7 +104,7 @@ Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <ING
 
 ## Stack
 
-Next.js 16 App Router, React 19, Tailwind 4, `@xyflow/react`, `@dagrejs/dagre`, `mermaid`, `zod`, `@modelcontextprotocol/sdk`. Node 22+ (dev is 26 here). No Supabase. No xAI key for the visualizer MVP.
+Next.js 16 App Router, React 19, Tailwind 4, `@dagrejs/dagre`, `mermaid`, `zod`, `@modelcontextprotocol/sdk`. Node 22+ (dev is 26 here). No Supabase. No xAI key for the visualizer MVP.
 
 ## Later (analyzer)
 

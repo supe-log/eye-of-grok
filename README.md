@@ -57,7 +57,7 @@ One page. Three layers on the **same** graph.
 2. **Hygiene** — flag `stale` / `hidden` / `deprecated` / `duplicate`, plus groups over the 6-Bot cap. Surface `bots + groups / 50`.
 3. **Onboarding** — “If you are new, talk to X for Y.” Derived from `reports_to` + titles, optionally rewritten by Grok 4.6.
 
-The Chief of Staff (or a human) fills a small JSON graph from what it can see. The site stores that snapshot, draws it (React Flow), and can export Mermaid so the same picture pastes into a chat or doc.
+The Chief of Staff (or a human) fills a small JSON graph from what it can see. The site stores that snapshot, draws a canvas-style DAG, and can export Mermaid so the same picture pastes into a chat or doc.
 
 **Mermaid is a view, not the source of truth.** Flowcharts get ugly past ~20–30 nodes. We store a graph and render it two ways.
 
@@ -80,7 +80,7 @@ Until xAI ships a roster API, every live picture is **Bot as cartographer**: nam
 
 | Built now | In the architecture, not on by default |
 | --- | --- |
-| Interactive React Flow map, inspect, status colors, **Flag stale** | Grok 4.6 analyze UI (keep / hide / merge / close-group + onboarding blurb) — **API exists**, UI hidden until we have an xAI key and the team turns it on |
+| Canvas-style map (reporting line / spaces), inspect, **Flag stale** | Grok 4.6 analyze UI (keep / hide / merge / close-group + onboarding blurb) — **API exists**, UI hidden until we have an xAI key and the team turns it on |
 | Edit the roster in the browser | Official “list my bots” import (does not exist) |
 | Live local ingest from Casey on this Mac | Auto-read `~/Library/Application Support/Grok Bot` |
 | Mermaid export of the current graph | Lean “after” Mermaid from analyze |
@@ -266,7 +266,7 @@ Do not turn the Analyze UI back on unless someone adds an xAI key and the team a
 
 ## Stack
 
-Next.js 16 App Router, React 19, Tailwind 4, `@xyflow/react`, `@dagrejs/dagre`, `mermaid`, `zod`, `@modelcontextprotocol/sdk`. Node 22+. No Supabase. No xAI key for the visualizer.
+Next.js 16 App Router, React 19, Tailwind 4, `@dagrejs/dagre`, `mermaid`, `zod`, `@modelcontextprotocol/sdk`. Node 22+. No Supabase. No xAI key for the visualizer. Canvas-style DAG in the browser; Cursor canvas beside chat for the same roster.
 
 ---
 

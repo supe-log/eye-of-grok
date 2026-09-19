@@ -1,15 +1,7 @@
 "use client";
 
-import {
-  Background,
-  Controls,
-  MiniMap,
-  ReactFlow,
-  ReactFlowProvider,
-} from "@xyflow/react";
 import Link from "next/link";
-import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CASEY_LOCAL_PROMPT,
   LOCAL_SNAPSHOT_URL,
@@ -20,7 +12,7 @@ import {
   snapshotPostUrl,
 } from "@/lib/casey-prompt";
 import { addLink, addNode, removeNode, setNodeStatus } from "@/lib/graph-edit";
-import { snapshotToFlow } from "@/lib/layout-graph";
+import type { OrgCanvasView } from "@/lib/layout-graph";
 import { snapshotToMermaid } from "@/lib/mermaid";
 import { snapshotCapacity } from "@/lib/capacity";
 import {
@@ -32,27 +24,13 @@ import {
   type NodeStatus,
   type OrgSnapshot,
 } from "@/lib/types";
-import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, isProblemStatus, relativeTime } from "@/lib/status-style";
+import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, relativeTime } from "@/lib/status-style";
 import { MermaidView } from "./MermaidView";
-import { OrgNode, type OrgFlowNode } from "./OrgNode";
-
-const nodeTypes = { org: OrgNode };
+import { OrgCanvas } from "./OrgCanvas";
 
 type Tab = "inspect" | "edit" | "mermaid" | "live";
 
 export function OrgWorkbench({
-  initialSnapshot,
-}: {
-  initialSnapshot: OrgSnapshot;
-}) {
-  return (
-    <ReactFlowProvider>
-      <WorkbenchInner initialSnapshot={initialSnapshot} />
-    </ReactFlowProvider>
-  );
-}
-
-function WorkbenchInner({
   initialSnapshot,
 }: {
   initialSnapshot: OrgSnapshot;
@@ -63,6 +41,7 @@ function WorkbenchInner({
     initialSnapshot.nodes[0]?.id ?? null,
   );
   const [hygiene, setHygiene] = useState(false);
+  const [view, setView] = useState<OrgCanvasView>("reports");
   const [tab, setTab] = useState<Tab>("live");
   const [ingestToken, setIngestToken] = useState("hackathon-demo");
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
@@ -139,24 +118,6 @@ function WorkbenchInner({
     setSaveMsg("Starter reset");
   }, [orgId]);
 
-  const flow = useMemo(() => {
-    const laid = snapshotToFlow(snapshot);
-    return {
-      nodes: laid.nodes.map((node) => {
-        const flagged = isProblemStatus(node.data.orgNode.status);
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            dimmed: hygiene && !flagged,
-            recommended: hygiene && flagged,
-          },
-        };
-      }),
-      edges: laid.edges,
-    };
-  }, [snapshot, hygiene]);
-
   const selected = snapshot.nodes.find((node) => node.id === selectedId) ?? null;
   const capacity = snapshotCapacity(snapshot);
   const mermaid = snapshotToMermaid(snapshot);
@@ -191,6 +152,24 @@ function WorkbenchInner({
           />
         </div>
         <div className="top-actions">
+          <div className="view-pills">
+            <button
+              type="button"
+              className="pill"
+              data-on={view === "reports"}
+              onClick={() => setView("reports")}
+            >
+              Reporting line
+            </button>
+            <button
+              type="button"
+              className="pill"
+              data-on={view === "spaces"}
+              onClick={() => setView("spaces")}
+            >
+              Spaces
+            </button>
+          </div>
           <label className="toggle">
             <input
               type="checkbox"
@@ -222,30 +201,16 @@ function WorkbenchInner({
 
       <section className="stage">
         <div className="canvas">
-          <ReactFlow
-            nodes={flow.nodes}
-            edges={flow.edges}
-            nodeTypes={nodeTypes}
-            fitView
-            fitViewOptions={{ padding: 0.22 }}
-            minZoom={0.35}
-            maxZoom={1.6}
-            onNodeClick={(_event, node) => {
-              setSelectedId(node.id);
+          <OrgCanvas
+            snapshot={snapshot}
+            view={view}
+            hygiene={hygiene}
+            selectedId={selectedId}
+            onSelect={(id) => {
+              setSelectedId(id);
               setTab("inspect");
             }}
-            nodesConnectable={false}
-            edgesFocusable={false}
-          >
-            <Background gap={22} color="#2a2620" />
-            <MiniMap
-              pannable
-              zoomable
-              maskColor="rgba(16,14,12,0.72)"
-              nodeColor={(node: OrgFlowNode) => STATUS_COLOR[node.data.orgNode.status]}
-            />
-            <Controls showInteractive={false} />
-          </ReactFlow>
+          />
         </div>
 
         <aside className="rail">

@@ -29,16 +29,16 @@ export function ShareHome() {
     <main className="share-shell">
       <header className="share-brand">
         <span className="brand-mark">Eye of Grok</span>
-        <span className="brand-sub">One paste into Chief of Staff</span>
+        <span className="brand-sub">Canvas map · one paste into Chief of Staff</span>
       </header>
 
       <section className="share-card">
         <p className="kicker">New users · 20 seconds</p>
-        <h1>Type your name. Paste one message. Watch your fleet appear.</h1>
+        <h1>Type your name. Paste one message. Open the fleet canvas.</h1>
         <p className="body">
           No xAI key. No Grok Bot login. Your Chief of Staff already knows the
-          sidebar — it POSTs bots, groups, statuses, and tool names. This site draws
-          them.
+          sidebar — it POSTs bots, groups, statuses, and tool names. This site
+          draws a flat reporting-line diagram, the same shape as a Cursor canvas.
         </p>
 
         <label className="field">
