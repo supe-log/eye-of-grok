@@ -7,14 +7,23 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from "@xyflow/react";
+import Link from "next/link";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CASEY_LOCAL_PROMPT,
+  LOCAL_SNAPSHOT_URL,
+  createBotSharePrompt,
+  createBotSpeakLine,
+  mapUrl,
+  mcpUrl,
+  snapshotPostUrl,
+} from "@/lib/casey-prompt";
 import { addLink, addNode, removeNode, setNodeStatus } from "@/lib/graph-edit";
 import { snapshotToFlow } from "@/lib/layout-graph";
 import { snapshotToMermaid } from "@/lib/mermaid";
 import { snapshotCapacity } from "@/lib/capacity";
 import {
-  DEFAULT_ORG_ID,
   EDGE_KINDS,
   NODE_KINDS,
   NODE_STATUSES,
@@ -28,9 +37,8 @@ import { MermaidView } from "./MermaidView";
 import { OrgNode, type OrgFlowNode } from "./OrgNode";
 
 const nodeTypes = { org: OrgNode };
-const ORG_ID = DEFAULT_ORG_ID;
 
-type Tab = "inspect" | "edit" | "mermaid" | "connect";
+type Tab = "inspect" | "edit" | "mermaid" | "live";
 
 export function OrgWorkbench({
   initialSnapshot,
@@ -55,17 +63,36 @@ function WorkbenchInner({
     initialSnapshot.nodes[0]?.id ?? null,
   );
   const [hygiene, setHygiene] = useState(false);
-  const [tab, setTab] = useState<Tab>("edit");
+  const [tab, setTab] = useState<Tab>("live");
   const [ingestToken, setIngestToken] = useState("hackathon-demo");
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [livePulse, setLivePulse] = useState(false);
+  const lastPushedAt = useRef(initialSnapshot.pushedAt);
+  const orgId = snapshot.orgId;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void (async () => {
+        const res = await fetch(`/api/orgs/${orgId}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const next = (await res.json()) as OrgSnapshot;
+        if (next.pushedAt === lastPushedAt.current) return;
+        lastPushedAt.current = next.pushedAt;
+        setSnapshot(next);
+        setLivePulse(true);
+        window.setTimeout(() => setLivePulse(false), 1200);
+      })();
+    }, 2500);
+    return () => window.clearInterval(timer);
+  }, [orgId]);
 
   const persist = useCallback(
     async (next: OrgSnapshot) => {
       setBusy(true);
       setSaveMsg(null);
       try {
-        const res = await fetch(`/api/orgs/${ORG_ID}/snapshot`, {
+        const res = await fetch(`/api/orgs/${orgId}/snapshot`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -78,6 +105,7 @@ function WorkbenchInner({
           setSaveMsg(body.detail || body.error || `Save failed (${res.status})`);
           return;
         }
+        lastPushedAt.current = body.pushedAt;
         setSnapshot(body);
         setSaveMsg(`Saved ${body.nodes.length} nodes`);
       } catch (error) {
@@ -86,7 +114,7 @@ function WorkbenchInner({
         setBusy(false);
       }
     },
-    [ingestToken],
+    [ingestToken, orgId],
   );
 
   const apply = useCallback(
@@ -99,16 +127,17 @@ function WorkbenchInner({
 
   const reset = useCallback(async () => {
     setLoadError(null);
-    const res = await fetch(`/api/orgs/${ORG_ID}?reset=1`, { cache: "no-store" });
+    const res = await fetch(`/api/orgs/${orgId}?reset=1`, { cache: "no-store" });
     if (!res.ok) {
       setLoadError(`Could not reset (${res.status})`);
       return;
     }
     const next = (await res.json()) as OrgSnapshot;
+    lastPushedAt.current = next.pushedAt;
     setSnapshot(next);
     setSelectedId(next.nodes[0]?.id ?? null);
     setSaveMsg("Starter reset");
-  }, []);
+  }, [orgId]);
 
   const flow = useMemo(() => {
     const laid = snapshotToFlow(snapshot);
@@ -136,8 +165,12 @@ function WorkbenchInner({
     <main className="shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">Eye of Grok</span>
-          <span className="brand-sub">Your Grok Bot setup</span>
+          <Link className="brand-mark" href="/" style={{ color: "inherit", textDecoration: "none" }}>
+            Eye of Grok
+          </Link>
+          <span className="brand-sub">
+            {snapshot.orgId} · shareable{livePulse ? " · incoming" : " · live"}
+          </span>
         </div>
         <div className="gauges">
           <Gauge
@@ -151,6 +184,11 @@ function WorkbenchInner({
             warn={capacity.overstaffedGroupIds.length > 0}
           />
           <Gauge label="Updated" value={relativeTime(snapshot.pushedAt)} />
+          <Gauge label="Source" value={snapshot.source.replaceAll("_", " ")} />
+          <Gauge
+            label="Tools"
+            value={snapshot.tools?.length ? String(snapshot.tools.length) : "—"}
+          />
         </div>
         <div className="top-actions">
           <label className="toggle">
@@ -172,6 +210,15 @@ function WorkbenchInner({
 
       {loadError && <p className="panel-error">{loadError}</p>}
       {saveMsg && <p className="muted">{busy ? "Saving…" : saveMsg}</p>}
+      {snapshot.tools && snapshot.tools.length > 0 && (
+        <div className="chip-row">
+          {snapshot.tools.map((tool) => (
+            <span key={tool} className="chip">
+              {tool}
+            </span>
+          ))}
+        </div>
+      )}
 
       <section className="stage">
         <div className="canvas">
@@ -205,10 +252,10 @@ function WorkbenchInner({
           <nav className="tabs">
             {(
               [
+                ["live", "Live"],
                 ["inspect", "Inspect"],
                 ["edit", "Edit"],
                 ["mermaid", "Mermaid"],
-                ["connect", "Connect"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -245,8 +292,13 @@ function WorkbenchInner({
               />
             )}
             {tab === "mermaid" && <MermaidPanel current={mermaid} />}
-            {tab === "connect" && (
-              <ConnectPanel token={ingestToken} onToken={setIngestToken} />
+            {tab === "live" && (
+              <LivePanel
+                snapshot={snapshot}
+                pulse={livePulse}
+                token={ingestToken}
+                onToken={setIngestToken}
+              />
             )}
           </div>
         </aside>
@@ -546,35 +598,88 @@ function MermaidPanel({ current }: { current: string }) {
   );
 }
 
-function ConnectPanel({
+function LivePanel({
+  snapshot,
+  pulse,
   token,
   onToken,
 }: {
+  snapshot: OrgSnapshot;
+  pulse: boolean;
   token: string;
   onToken: (value: string) => void;
 }) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const owner =
+    snapshot.nodes.find((node) => node.kind === "human")?.name ?? snapshot.orgId;
+  const prompt = origin
+    ? createBotSharePrompt({
+        origin,
+        orgId: snapshot.orgId,
+        token,
+        ownerName: owner,
+      })
+    : CASEY_LOCAL_PROMPT;
+  const speak = origin
+    ? createBotSpeakLine({ origin, orgId: snapshot.orgId, token })
+    : CASEY_LOCAL_PROMPT;
+  const loopback = /localhost|127\.0\.0\.1/.test(origin);
+
   return (
     <div className="stack">
-      <p className="kicker">Later</p>
-      <h2>Chief of Staff push</h2>
+      <p className="kicker">Share with a Grok Bot</p>
+      <h2>{pulse ? "Roster just arrived" : "Hand this map to a Bot"}</h2>
       <p className="body">
-        When you want Casey to update the map, give them this site or the MCP URL. Analyze is parked
-        until you add an xAI key.
+        Map <code>{origin ? mapUrl(origin, snapshot.orgId) : `/u/${snapshot.orgId}`}</code>{" "}
+        · {snapshot.nodes.length} nodes · {snapshot.source.replaceAll("_", " ")} ·{" "}
+        {relativeTime(snapshot.pushedAt)}
       </p>
+      <p className="callout">
+        Paste the prompt into any Chief of Staff. They POST{" "}
+        <code>
+          {origin ? snapshotPostUrl(origin, snapshot.orgId) : `/api/orgs/${snapshot.orgId}/snapshot`}
+        </code>{" "}
+        with <code>Authorization: Bearer {token}</code>. MCP:{" "}
+        <code>{origin ? mcpUrl(origin) : "/api/mcp"}</code>
+      </p>
+      <button
+        type="button"
+        className="btn"
+        onClick={() => void navigator.clipboard.writeText(speak)}
+      >
+        Copy Chief of Staff message
+      </button>
+      <pre className="codeblock">{speak}</pre>
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={() => void navigator.clipboard.writeText(prompt)}
+      >
+        Copy full JSON prompt
+      </button>
+      {loopback && (
+        <>
+          <h3>This Mac only (no bearer)</h3>
+          <p className="muted">
+            Cloud MCP cannot see localhost. On this laptop, a Bot with local egress
+            can POST <code>{LOCAL_SNAPSHOT_URL}</code> into Logan&apos;s <code>mine</code> map.
+          </p>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => void navigator.clipboard.writeText(CASEY_LOCAL_PROMPT)}
+          >
+            Copy Logan local prompt
+          </button>
+        </>
+      )}
       <label className="field">
-        <span>Ingest token</span>
+        <span>Bearer for phone / cloud / MCP</span>
         <input value={token} onChange={(event) => onToken(event.target.value)} />
       </label>
-      <pre className="codeblock">{`GET  /api/orgs/${DEFAULT_ORG_ID}
-POST /api/orgs/${DEFAULT_ORG_ID}/snapshot
-GET  /api/orgs/${DEFAULT_ORG_ID}/mermaid
-
-MCP  /api/mcp
-Authorization: Bearer ${token}
-
-tools
-  push_org_snapshot
-  get_org_view`}</pre>
+      <p className="muted">
+        <Link href="/">Claim a different slug</Link>
+      </p>
     </div>
   );
 }

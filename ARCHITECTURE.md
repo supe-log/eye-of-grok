@@ -13,12 +13,13 @@ This app is the map you wish the sidebar was.
 | Now | Parked |
 | --- | --- |
 | Interactive org map (React Flow) | Grok 4.6 analyze / lean-up (code exists, UI hidden) |
-| Edit your bots and spaces in the browser | Live import from the Grok Bot macOS app |
+| Live local ingest: Bot POSTs `http://127.0.0.1:3002/api/local/snapshot` | Official “list my bots” API (does not exist) |
+| Edit your bots and spaces in the browser | Auto-read the encrypted Grok Bot macOS app data |
 | Status colors + “Flag stale” | Hide/delete against real Grok Bot |
 | Mermaid export | Multi-tenant / many humans |
-| REST + MCP ingest | xAI key |
+| REST + MCP ingest (MCP only after a public URL) | xAI key |
 
-Default org id is `mine`. Starter graph is just **Logan**. Add the real roster from **Edit**.
+Default org id is `mine`. Starter graph is **Logan**. The full sidebar lands when Casey (or you) POSTs a snapshot from this Mac.
 
 ## Data model (source of truth)
 
@@ -61,16 +62,18 @@ Do not store transcripts or raw memory.
 
 ```mermaid
 flowchart LR
-  Human[Human in the UI] -->|Edit or paste JSON| API
-  CoS[Chief of Staff later] -->|POST snapshot or MCP| API
+  Human[Human in the UI] -->|Edit| API
+  Casey[Casey on this Mac] -->|POST /api/local/snapshot| API
   API[Next.js API] --> Store[data/orgs/mine.json]
-  Store --> Map[React Flow map]
+  Store --> Map[React Flow map polls every 2.5s]
   Store --> Mermaid[Mermaid export]
 ```
 
+On this laptop, **do not** point Grok Bot cloud MCP at `http://127.0.0.1:3002/api/mcp`. The MCP client runs in the cloud and cannot see localhost. Casey uses **local egress** + REST. MCP is for a later public HTTPS host.
+
 Local snapshots live under `data/orgs/` (gitignored). First `GET /api/orgs/mine` seeds [`src/lib/my-setup.ts`](src/lib/my-setup.ts).
 
-Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <INGEST_TOKEN>` (default `hackathon-demo`).
+Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <INGEST_TOKEN>` (default `hackathon-demo`). Loopback `POST /api/local/snapshot` does not.
 
 ## File map
 
@@ -86,6 +89,7 @@ Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <ING
 | `src/lib/fixture.ts` | Old messy-startup sample (unused in UI) |
 | `src/lib/analyze.ts` | Parked Grok / heuristic lean-up |
 | `src/app/api/orgs/[id]/*` | REST |
+| `src/app/api/local/snapshot/route.ts` | Loopback ingest for this Mac |
 | `src/app/api/mcp/route.ts` | Streamable HTTP MCP |
 | `src/lib/mcp-server.ts` | `push_org_snapshot`, `get_org_view`, `analyze_org` |
 

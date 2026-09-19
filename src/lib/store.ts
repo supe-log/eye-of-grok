@@ -1,10 +1,19 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
+import { createEmptySetup } from "./empty-setup";
 import { createMySetupFixture } from "./my-setup";
+import { isValidOrgId, normalizeOrgId } from "./org-id";
 import { orgSnapshotSchema } from "./schema";
 import { DEFAULT_ORG_ID, type OrgSnapshot } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data", "orgs");
+const DATA_DIR = process.env.VERCEL
+  ? path.join("/tmp", "eye-of-grok-orgs")
+  : path.join(process.cwd(), "data", "orgs");
+
+function starterFor(orgId: string): OrgSnapshot {
+  if (orgId === DEFAULT_ORG_ID) return createMySetupFixture();
+  return createEmptySetup(orgId);
+}
 
 function fileFor(orgId: string): string {
   return path.join(DATA_DIR, `${orgId}.json`);
@@ -22,21 +31,22 @@ export function saveOrg(snapshot: OrgSnapshot): OrgSnapshot {
 }
 
 export function getOrg(orgId: string): OrgSnapshot | null {
-  const file = fileFor(orgId);
+  const id = normalizeOrgId(orgId);
+  if (!isValidOrgId(id)) return null;
+  const file = fileFor(id);
   if (!existsSync(file)) {
-    if (orgId === DEFAULT_ORG_ID) {
-      return saveOrg(createMySetupFixture());
-    }
-    return null;
+    return saveOrg(starterFor(id));
   }
   const raw = JSON.parse(readFileSync(file, "utf8")) as unknown;
   return orgSnapshotSchema.parse(raw);
 }
 
 export function resetOrg(orgId: string = DEFAULT_ORG_ID): OrgSnapshot {
-  const fixture = createMySetupFixture();
-  fixture.orgId = orgId;
-  return saveOrg(fixture);
+  const id = normalizeOrgId(orgId);
+  if (!isValidOrgId(id)) {
+    throw new Error(`invalid_org_id: ${orgId}`);
+  }
+  return saveOrg(starterFor(id));
 }
 
 export function upsertOrg(
@@ -48,11 +58,15 @@ export function upsertOrg(
     typeof incoming === "object" && incoming !== null
       ? (incoming as Record<string, unknown>)
       : {};
+  const id = normalizeOrgId(orgId);
+  if (!isValidOrgId(id)) {
+    throw new Error(`invalid_org_id: ${orgId}`);
+  }
   const withDefaults = {
     pushedAt: new Date().toISOString(),
     source: sourceFallback,
     ...incomingObject,
-    orgId,
+    orgId: id,
   };
   return saveOrg(orgSnapshotSchema.parse(withDefaults));
 }

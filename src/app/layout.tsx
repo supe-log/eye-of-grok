@@ -19,8 +19,8 @@ const instrument = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Eye of Grok",
-  description: "Visualize your Grok Bot setup: bots, spaces, and how they connect.",
+  title: "Eye of Grok — Logan May",
+  description: "Logan May's Grok Bot org map: bots, sidebar sections, and group rooms.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

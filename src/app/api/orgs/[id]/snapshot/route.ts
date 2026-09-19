@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthorized, unauthorized } from "@/lib/auth";
+import { isLoopbackRequest } from "@/lib/loopback";
 import { upsertOrg } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -9,7 +10,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  if (!isAuthorized(request)) return unauthorized();
+  if (!isAuthorized(request) && !isLoopbackRequest(request)) return unauthorized();
   const { id } = await context.params;
   let body: unknown;
   try {

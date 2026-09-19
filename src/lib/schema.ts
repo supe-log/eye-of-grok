@@ -29,6 +29,7 @@ export const orgSnapshotSchema = z.object({
   pushedAt: z.string().min(1),
   source: z.enum(SNAPSHOT_SOURCES),
   notes: z.string().optional(),
+  tools: z.array(z.string().min(1)).optional(),
   nodes: z.array(orgNodeSchema).min(1),
   edges: z.array(orgEdgeSchema),
 });

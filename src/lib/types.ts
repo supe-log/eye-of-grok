@@ -47,6 +47,7 @@ export type OrgSnapshot = {
   pushedAt: string;
   source: SnapshotSource;
   notes?: string;
+  tools?: string[];
   nodes: OrgNode[];
   edges: OrgEdge[];
 };

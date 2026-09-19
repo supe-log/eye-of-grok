@@ -499,3 +499,71 @@ textarea {
     min-height: 52vh;
   }
 }
+
+.share-shell {
+  min-height: 100dvh;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.share-brand .brand-mark {
+  font-size: 36px;
+}
+
+.share-card {
+  padding: 20px 20px 22px;
+  border: 1px solid var(--line);
+  background: rgba(18, 16, 14, 0.88);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.share-card h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.share-card h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.share-card .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.share-card .btn[aria-disabled="true"] {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: default;
+}
+
+.share-steps {
+  margin: 0;
+  padding-left: 18px;
+  color: #d8cfc0;
+  line-height: 1.55;
+}
+
+.share-foot {
+  margin: 0;
+}
+
+.share-foot a {
+  color: var(--accent);
+}

@@ -18,10 +18,11 @@ async function handle(request: Request): Promise<Response> {
       auth: "Authorization: Bearer <INGEST_TOKEN>",
       tools: ["push_org_snapshot", "get_org_view", "analyze_org"],
       rest: {
-        get: "/api/orgs/startup",
-        snapshot: "POST /api/orgs/startup/snapshot",
-        mermaid: "/api/orgs/startup/mermaid",
-        analyze: "POST /api/orgs/startup/analyze",
+        get: "/api/orgs/:orgId",
+        snapshot: "POST /api/orgs/:orgId/snapshot",
+        mermaid: "/api/orgs/:orgId/mermaid",
+        share: "/api/share/:orgId",
+        map: "/u/:orgId",
       },
     });
   }
