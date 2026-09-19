@@ -4,17 +4,15 @@ export function LogoMark({ className = "logo-mark" }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 32 18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox="0 0 64 64"
+      xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
-      <path d="M1.5 9 C 7 1.5, 25 1.5, 30.5 9 C 25 16.5, 7 16.5, 1.5 9 Z" />
-      <circle cx="16" cy="9" r="4" />
-      <circle cx="16" cy="9" r="1.25" fill="currentColor" stroke="none" />
+      <g fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round">
+        <path d="M 47 12 A 22 22 0 0 0 12 47" />
+        <path d="M 17 52 A 22 22 0 0 0 52 17" />
+      </g>
+      <path fill="currentColor" stroke="none" d="M 3 61 Q 12 12 61 3 Q 52 52 3 61 Z" />
     </svg>
   );
 }
