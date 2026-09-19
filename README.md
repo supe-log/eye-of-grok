@@ -6,6 +6,7 @@ Analyze / lean-up is parked. No xAI key required.
 
 Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)
 
+- **Full overview (start here):** [OVERVIEW.md](OVERVIEW.md)
 - Architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Teammates (clone / push): [TEAM.md](TEAM.md)
 - Demo walkthrough: [DEMO.md](DEMO.md)

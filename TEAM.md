@@ -28,9 +28,10 @@ Do not commit `.env.local`, `data/`, or API keys. `.env.example` is the only env
 
 ## What to read
 
-1. [README.md](README.md) — run + API
-2. [ARCHITECTURE.md](ARCHITECTURE.md) — model and file map
-3. [DEMO.md](DEMO.md) — 30-second walkthrough
+1. [OVERVIEW.md](OVERVIEW.md) — full project picture
+2. [README.md](README.md) — run + API
+3. [ARCHITECTURE.md](ARCHITECTURE.md) — model and file map
+4. [DEMO.md](DEMO.md) — 30-second walkthrough
 
 ## What not to do this weekend
 
