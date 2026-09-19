@@ -1,5 +1,5 @@
-import { ShareHome } from "@/components/ShareHome";
+import { Landing } from "@/components/Landing";
 
 export default function Home() {
-  return <ShareHome />;
+  return <Landing />;
 }

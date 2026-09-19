@@ -131,7 +131,7 @@ export function OrgWorkbench({
             Eye of Grok
           </Link>
           <span className="brand-sub">
-            {snapshot.orgId} · shareable{livePulse ? " · incoming" : " · live"}
+            {snapshot.orgId} · shareable · {livePulse ? "incoming" : "live"}
           </span>
         </div>
         <div className="gauges">
@@ -668,7 +668,7 @@ function LivePanel({
         <input value={token} onChange={(event) => onToken(event.target.value)} />
       </label>
       <p className="muted">
-        <Link href="/">Claim a different slug</Link>
+        <Link href="/claim">Claim a different slug</Link>
       </p>
       {revisions.length > 0 && (
         <>
