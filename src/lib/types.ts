@@ -52,6 +52,14 @@ export type OrgSnapshot = {
   edges: OrgEdge[];
 };
 
+export type OrgRevision = {
+  id: number;
+  orgId: string;
+  pushedAt: string;
+  source: SnapshotSource | string;
+  nodeCount: number;
+};
+
 export const ANALYZE_ACTIONS = [
   "keep",
   "hide",

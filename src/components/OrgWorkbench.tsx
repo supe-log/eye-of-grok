@@ -22,6 +22,7 @@ import {
   type EdgeKind,
   type NodeKind,
   type NodeStatus,
+  type OrgRevision,
   type OrgSnapshot,
 } from "@/lib/types";
 import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, relativeTime } from "@/lib/status-style";
@@ -263,6 +264,11 @@ export function OrgWorkbench({
                 pulse={livePulse}
                 token={ingestToken}
                 onToken={setIngestToken}
+                onRestore={(next) => {
+                  lastPushedAt.current = next.pushedAt;
+                  setSnapshot(next);
+                  setSaveMsg("Restored snapshot");
+                }}
               />
             )}
           </div>
@@ -568,11 +574,13 @@ function LivePanel({
   pulse,
   token,
   onToken,
+  onRestore,
 }: {
   snapshot: OrgSnapshot;
   pulse: boolean;
   token: string;
   onToken: (value: string) => void;
+  onRestore: (next: OrgSnapshot) => void;
 }) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const owner =
@@ -589,6 +597,23 @@ function LivePanel({
     ? createBotSpeakLine({ origin, orgId: snapshot.orgId, token })
     : CASEY_LOCAL_PROMPT;
   const loopback = /localhost|127\.0\.0\.1/.test(origin);
+  const [revisions, setRevisions] = useState<OrgRevision[]>([]);
+  const [restoreBusy, setRestoreBusy] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch(`/api/orgs/${snapshot.orgId}/revisions`, { cache: "no-store" })
+      .then((res) => res.json() as Promise<{ revisions?: OrgRevision[] }>)
+      .then((body) => {
+        if (!cancelled) setRevisions(body.revisions ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setRevisions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [snapshot.orgId, snapshot.pushedAt]);
 
   return (
     <div className="stack">
@@ -645,6 +670,58 @@ function LivePanel({
       <p className="muted">
         <Link href="/">Claim a different slug</Link>
       </p>
+      {revisions.length > 0 && (
+        <>
+          <h3>Saved snapshots</h3>
+          <p className="muted">
+            Durable in Neon. Anyone with this slug sees the same latest map after
+            they leave and come back.
+          </p>
+          <ul className="roster">
+            {revisions.map((revision) => (
+              <li key={revision.id}>
+                <button
+                  type="button"
+                  disabled={restoreBusy !== null}
+                  onClick={() => {
+                    if (revision.id <= 0) return;
+                    setRestoreBusy(revision.id);
+                    void (async () => {
+                      try {
+                        const res = await fetch(`/api/orgs/${snapshot.orgId}/revisions`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          body: JSON.stringify({ revisionId: revision.id }),
+                        });
+                        const body = (await res.json()) as OrgSnapshot & {
+                          detail?: string;
+                        };
+                        if (!res.ok || !body.nodes) return;
+                        onRestore(body);
+                      } finally {
+                        setRestoreBusy(null);
+                      }
+                    })();
+                  }}
+                >
+                  <i />
+                  <span>
+                    {relativeTime(revision.pushedAt)} · {revision.nodeCount} nodes
+                  </span>
+                  <em>
+                    {restoreBusy === revision.id
+                      ? "Restoring"
+                      : revision.source.replaceAll("_", " ")}
+                  </em>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }

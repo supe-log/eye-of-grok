@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const snapshot = upsertOrg(DEFAULT_ORG_ID, body, "chief_of_staff");
+    const snapshot = await upsertOrg(DEFAULT_ORG_ID, body, "chief_of_staff");
     return NextResponse.json(snapshot);
   } catch (error) {
     return NextResponse.json(

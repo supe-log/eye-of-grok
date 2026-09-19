@@ -11,9 +11,9 @@ export async function GET(
   const { id } = await context.params;
   const url = new URL(request.url);
   if (url.searchParams.get("reset") === "1") {
-    return NextResponse.json(resetOrg(id));
+    return NextResponse.json(await resetOrg(id));
   }
-  const org = getOrg(id);
+  const org = await getOrg(id);
   if (!org) {
     return NextResponse.json({ error: "org_not_found", orgId: id }, { status: 404 });
   }

@@ -24,7 +24,7 @@ export function createOrgMcpServer(): McpServer {
       },
     },
     async ({ orgId, snapshot }) => {
-      const saved = upsertOrg(orgId, snapshot, "chief_of_staff");
+      const saved = await upsertOrg(orgId, snapshot, "chief_of_staff");
       return {
         content: [
           {
@@ -53,7 +53,7 @@ export function createOrgMcpServer(): McpServer {
       },
     },
     async ({ orgId }) => {
-      const org = getOrg(orgId);
+      const org = await getOrg(orgId);
       if (!org) {
         return {
           isError: true,
@@ -85,7 +85,7 @@ export function createOrgMcpServer(): McpServer {
       },
     },
     async ({ orgId }) => {
-      const org = getOrg(orgId);
+      const org = await getOrg(orgId);
       if (!org) {
         return {
           isError: true,

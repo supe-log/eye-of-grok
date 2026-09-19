@@ -86,7 +86,7 @@ Until xAI ships a roster API, every live picture is **Bot as cartographer**: nam
 | Mermaid export of the current graph | Lean “after” Mermaid from analyze |
 | REST + MCP ingest | Hide / delete against real Grok Bot |
 | Capacity gauges (`/50`, over-cap spaces) | Multi-tenant / many humans on one map |
-| File store `data/orgs/mine.json` | Daily routine that re-pushes; historical diffs |
+| Durable Neon snapshots + revision history per slug | Daily routine that re-pushes from Grok Bot |
 
 Default org id is `mine`. First paint is **Logan May's real Grok Bot layout** from this Mac: Log (Chief of Staff), sidebar sections (GT, Harness, Factory, Ops, Writing App, Personal), 21 bots, and 11 group rooms. Casey can POST a newer snapshot any time.
 
@@ -144,7 +144,7 @@ Copy `.env.example` → `.env.local` only if you are turning analyze on or chang
 - **Logan + Casey on this laptop:** no. `npm run dev` on :3002 is the live picture.
 - **Teammates, a phone, or a Bot whose tools run only in the cloud:** yes. Deploy (e.g. Vercel), set `INGEST_TOKEN`, then Casey POSTs to `https://<host>/api/orgs/mine/snapshot` with `Authorization: Bearer <token>`, or uses MCP at `https://<host>/api/mcp`.
 
-Vercel serverless will lose the file-backed snapshot across instances unless we add a real store later. Fine for a demo process; not a production multi-instance store.
+Org maps persist in Neon Postgres (`org_snapshots` plus a revision row on every save). Leave and come back, or open the same slug from another device — the latest snapshot is still there. Local fallback without `DATABASE_URL` is still `data/orgs/` (gitignored).
 
 ---
 

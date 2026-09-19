@@ -20,7 +20,7 @@ export async function POST(
   }
 
   try {
-    const snapshot = upsertOrg(id, body, "chief_of_staff");
+    const snapshot = await upsertOrg(id, body, "chief_of_staff");
     return NextResponse.json(snapshot);
   } catch (error) {
     return NextResponse.json(

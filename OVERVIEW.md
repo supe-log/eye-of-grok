@@ -42,7 +42,7 @@ Do not look for Analyze in the UI this weekend unless the team agrees and an xAI
 | Mermaid export | Multi-tenant / many humans |
 | REST + MCP ingest | Required xAI key |
 
-Default org id is `mine`. Starter graph is only Logan. Snapshots live in `data/orgs/` (gitignored).
+Default org id is `mine`. Starter graph is only Logan. Live maps persist in Neon (`org_snapshots` + revision history). Local fallback without `DATABASE_URL` is `data/orgs/` (gitignored).
 
 ## Data model (source of truth)
 
@@ -56,7 +56,7 @@ Do not store transcripts or raw memory. The map is a **claimed** org. If the Chi
 
 ## How pieces talk
 
-Human in the UI (Edit or paste JSON) and, later, the Chief of Staff (`POST` snapshot or MCP) hit the Next.js API. The API writes `data/orgs/mine.json`. The map and Mermaid export both read that file.
+Human in the UI (Edit or paste JSON) and the Chief of Staff (`POST` snapshot or MCP) hit the Next.js API. The API upserts that slug in Neon and appends a revision. The map and Mermaid export both read the latest snapshot.
 
 Writes need `Authorization: Bearer <INGEST_TOKEN>`. Local default is `hackathon-demo`.
 

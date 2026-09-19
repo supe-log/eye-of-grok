@@ -13,6 +13,6 @@ export default async function OrgPage({
   const { orgId: raw } = await params;
   const orgId = normalizeOrgId(raw);
   if (!isValidOrgId(orgId)) notFound();
-  const snapshot = getOrg(orgId) ?? resetOrg(orgId);
+  const snapshot = (await getOrg(orgId)) ?? (await resetOrg(orgId));
   return <OrgMapClient initialSnapshot={snapshot} />;
 }

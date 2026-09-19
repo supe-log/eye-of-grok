@@ -64,7 +64,7 @@ Do not store transcripts or raw memory.
 flowchart LR
   Human[Human in the UI] -->|Edit| API
   Casey[Casey on this Mac] -->|POST /api/local/snapshot| API
-  API[Next.js API] --> Store[data/orgs/mine.json]
+  API[Next.js API] --> Store[Neon org_snapshots]
   Store --> Map[Canvas-style DAG polls every 2.5s]
   Store --> Mermaid[Mermaid export]
 ```
@@ -85,7 +85,8 @@ Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <ING
 | `src/lib/layout-graph.ts` | dagre layout for the canvas diagram |
 | `src/lib/graph-edit.ts` | Add/remove nodes and links |
 | `src/lib/mermaid.ts` | Snapshot → flowchart |
-| `src/lib/store.ts` | File-backed store |
+| `src/lib/store.ts` | Neon snapshots (file fallback locally) |
+| `src/lib/db.ts` | Lazy Neon client + schema |
 | `src/lib/fixture.ts` | Old messy-startup sample (unused in UI) |
 | `src/lib/analyze.ts` | Parked Grok / heuristic lean-up |
 | `src/app/api/orgs/[id]/*` | REST |

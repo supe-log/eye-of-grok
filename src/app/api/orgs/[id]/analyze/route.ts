@@ -10,7 +10,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const org = getOrg(id);
+  const org = await getOrg(id);
   if (!org) {
     return NextResponse.json({ error: "org_not_found", orgId: id }, { status: 404 });
   }
