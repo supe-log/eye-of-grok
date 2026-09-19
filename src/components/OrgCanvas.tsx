@@ -100,9 +100,10 @@ function OrgCanvasInner({
           pannable
           zoomable
           maskColor="rgba(5, 5, 5, 0.72)"
-          nodeColor={(node: OrgFlowNode) =>
-            STATUS_COLOR[node.data.orgNode.status]
-          }
+          nodeColor={(node: OrgFlowNode) => {
+            const status = node.data?.orgNode?.status;
+            return status ? STATUS_COLOR[status] : "#8a8f98";
+          }}
         />
         <Controls showInteractive={false} />
       </ReactFlow>
