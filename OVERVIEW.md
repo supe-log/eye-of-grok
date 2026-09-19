@@ -1,14 +1,15 @@
 # Eye of Grok — project overview
 
-Read this file first. It is the high-level picture of the hackathon project. Details live in [README.md](README.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DEMO.md](DEMO.md), and [TEAM.md](TEAM.md).
+Read this file first. Details live in [README.md](README.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DEMO.md](DEMO.md), and [TEAM.md](TEAM.md).
 
-Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)
+Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)  
+Live: [https://eye-of-grok.vercel.app](https://eye-of-grok.vercel.app)
 
 ## One sentence
 
 Eye of Grok is a visualizer for **your** Grok Bot company: bots, group spaces, and the lines between them. Humans (or a Chief of Staff Bot) write the graph. The site draws it. It does not hide or delete real Bots.
 
-## Why we are building it (hackathon)
+## Why it exists
 
 Grok Bot scales like a company. You get named teammates, group chats, per-bot memory, and one shared computer. Official limits that matter:
 
@@ -20,29 +21,29 @@ Grok Bot scales like a company. You get named teammates, group chats, per-bot me
 
 xAI left coordination to a Chief of Staff and did not ship an org dashboard. There is **no official roster API**. The CoS can see the mess. Humans cannot. This site is the map you wish the sidebar was.
 
-Event framing: Cursor Austin × AITX / Grok Hackathon. The MVP on the floor is the **map you can edit**. Grok 4.6 analyze / lean-up exists in code and is **parked** (no xAI key, UI hidden) until the team turns it back on.
+Grok 4.6 analyze / lean-up exists in code and is **parked** (no xAI key required for the map; analyze UI is hidden).
 
 ## What you see when you run it
 
-1. Open the app. You start as a single node, **Logan**.
-2. Use **Edit** to add the Chief of Staff, specialists, and group spaces from your Grok Bot sidebar. There is no live import. Type names.
+1. Open the home page and claim a slug, or open the demo at `/u/mine`.
+2. Use **Edit** to add the Chief of Staff, specialists, and group spaces from your Grok Bot sidebar. There is no live import. Type names — or let a Bot POST a snapshot.
 3. Click a node to inspect. Mark one **stale** or **hidden**. Toggle **Flag stale**.
 4. Open **Mermaid** if you want the graph in a chat.
-5. **Connect** is how a Chief of Staff later pushes the same graph over REST or MCP.
+5. **Live / Connect** is how a Chief of Staff pushes the same graph over REST or MCP.
 
-Do not look for Analyze in the UI this weekend unless the team agrees and an xAI key is present.
+Do not look for Analyze in the UI unless an xAI key is present and someone turns that surface back on.
 
-## What is in / not in the MVP
+## What is in / not in the product
 
 | Now | Parked |
 | --- | --- |
-| Interactive org map (React Flow) | Grok 4.6 analyze / lean-up (code exists, UI hidden) |
+| Interactive org map (React Flow + dagre) | Grok 4.6 analyze / lean-up (code exists, UI hidden) |
 | Edit bots and spaces in the browser | Live import from the Grok Bot app |
 | Status colors + Flag stale | Hide/delete against real Grok Bot |
 | Mermaid export | Multi-tenant / many humans |
 | REST + MCP ingest | Required xAI key |
 
-Default org id is `mine`. Starter graph is only Logan. Live maps persist in Neon (`org_snapshots` + revision history). Local fallback without `DATABASE_URL` is `data/orgs/` (gitignored).
+Default org id is `mine`. The demo seed is a full sidebar sample (owner + Chief of Staff + specialists + group rooms). Live maps persist in Neon (`org_snapshots` + revision history). Local fallback without `DATABASE_URL` is `data/orgs/` (gitignored).
 
 ## Data model (source of truth)
 
@@ -58,7 +59,7 @@ Do not store transcripts or raw memory. The map is a **claimed** org. If the Chi
 
 Human in the UI (Edit or paste JSON) and the Chief of Staff (`POST` snapshot or MCP) hit the Next.js API. The API upserts that slug in Neon and appends a revision. The map and Mermaid export both read the latest snapshot.
 
-Writes need `Authorization: Bearer <INGEST_TOKEN>`. Local default is `hackathon-demo`.
+Writes off-loopback need `Authorization: Bearer <INGEST_TOKEN>`. Local default is `hackathon-demo`.
 
 ## Product rules we are not breaking
 
@@ -67,11 +68,11 @@ Writes need `Authorization: Bearer <INGEST_TOKEN>`. Local default is `hackathon-
 - Duplicate copies profile, not memory.
 - Tools/computer are account-level. Memory is per Bot.
 - Never auto-delete a real Bot from this app.
-- Do not wire unofficial Grok Bot CLIs or session cookies this weekend.
+- Do not wire unofficial Grok Bot CLIs or session cookies.
 
 ## Stack
 
-Next.js 16, React 19, Tailwind 4, React Flow, dagre, Mermaid, Zod, MCP SDK. No Supabase. No xAI key for the visualizer MVP.
+Next.js 16, React 19, Tailwind 4, React Flow (`@xyflow/react`), dagre, Mermaid, Zod, MCP SDK. No Supabase. No xAI key for the visualizer.
 
 ## Where to go next
 
@@ -79,5 +80,5 @@ Next.js 16, React 19, Tailwind 4, React Flow, dagre, Mermaid, Zod, MCP SDK. No S
 | --- | --- |
 | Clone, run, push | [TEAM.md](TEAM.md) |
 | File map and request flow | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| 30-second walkthrough | [DEMO.md](DEMO.md) |
+| Short walkthrough | [DEMO.md](DEMO.md) |
 | API table | [README.md](README.md) |
