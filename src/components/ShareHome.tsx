@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { getIngestToken } from "@/lib/auth";
 import { normalizeOrgId } from "@/lib/org-id";
 import { createBotSharePrompt, createBotSpeakLine } from "@/lib/share-prompt";
+import { Logo } from "./Logo";
 
 export function ShareHome() {
   const [name, setName] = useState("");
@@ -28,7 +29,7 @@ export function ShareHome() {
   return (
     <main className="share-shell">
       <header className="share-brand">
-        <span className="brand-mark">Eye of Grok</span>
+        <Logo href="/" />
         <span className="brand-sub">Canvas map · one paste into Chief of Staff</span>
       </header>
 

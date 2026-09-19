@@ -70,15 +70,36 @@ textarea {
   gap: 18px;
 }
 
-.brand-mark {
-  display: block;
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
   font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--ink);
+  transition: color 120ms ease;
+}
+
+.logo:hover {
+  color: var(--ink-2);
+}
+
+.logo-mark {
+  height: 1.15em;
+  width: auto;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  color: inherit;
+  line-height: 1;
+  letter-spacing: inherit;
 }
 
 .brand-sub {
@@ -775,9 +796,10 @@ textarea {
   gap: 22px;
 }
 
-.share-brand .brand-mark {
+.share-brand .logo {
   font-size: 22px;
   letter-spacing: 0.28em;
+  gap: 12px;
 }
 
 .share-card {

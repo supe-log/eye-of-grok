@@ -26,6 +26,7 @@ import {
   type OrgSnapshot,
 } from "@/lib/types";
 import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, relativeTime } from "@/lib/status-style";
+import { Logo } from "./Logo";
 import { MermaidView } from "./MermaidView";
 import { OrgCanvas } from "./OrgCanvas";
 
@@ -127,9 +128,7 @@ export function OrgWorkbench({
     <main className="shell">
       <header className="topbar">
         <div className="brand">
-          <Link className="brand-mark" href="/" style={{ color: "inherit", textDecoration: "none" }}>
-            Eye of Grok
-          </Link>
+          <Logo href="/" />
           <span className="brand-sub">
             {snapshot.orgId} · shareable · {livePulse ? "incoming" : "live"}
           </span>

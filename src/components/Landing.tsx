@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { Logo } from "./Logo";
 
 export function Landing() {
   return (
     <main className="landing">
       <div className="landing-nav">
-        <span className="brand-mark">Eye of Grok</span>
+        <Logo href="/" />
         <div className="landing-nav-links">
           <Link href="/u/mine" className="landing-nav-link">Live demo</Link>
           <Link href="/claim" className="btn btn-ghost landing-nav-cta">Claim map</Link>
