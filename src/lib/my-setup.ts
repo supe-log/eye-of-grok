@@ -390,7 +390,7 @@ export function createMySetupFixture(): OrgSnapshot {
       { id: "e-log-m-incidents", from: "bot-log", to: "grp-incidents", kind: "member_of" },
       { id: "e-incidents-m-incidents", from: "bot-incidents", to: "grp-incidents", kind: "member_of" },
 
-      { id: "e-h-ship-log", from: "bot-ship", to: "bot-log", kind: "handoff" },
+      { id: "e-h-ship-writing", from: "bot-ship", to: "bot-writing", kind: "handoff" },
       { id: "e-h-harvest-eval", from: "bot-arena-harvest", to: "bot-arena-eval", kind: "handoff" },
       { id: "e-h-incidents-security", from: "bot-incidents", to: "bot-security", kind: "handoff" },
       { id: "e-s-auditor-optimizer", from: "bot-bot-auditor", to: "bot-bot-optimizer", kind: "shares_context" },
