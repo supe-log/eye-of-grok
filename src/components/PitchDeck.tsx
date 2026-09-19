@@ -58,7 +58,7 @@ const SLIDES: Slide[] = [
   },
   {
     kind: "bullets",
-    kicker: "What it is",
+    kicker: "Product",
     title: "Readout, not a second control plane.",
     bullets: [
       "Edit names from the sidebar.",
@@ -72,7 +72,7 @@ const SLIDES: Slide[] = [
   {
     kind: "demo",
     kicker: "Demo",
-    title: "Open Eye of Grok.",
+    title: "Open. You are Logan.",
     steps: [
       "Open Eye of Grok. You are the only node.",
       "Edit → add Chief of Staff (reports to you), then specialists, then a group space.",
@@ -84,7 +84,7 @@ const SLIDES: Slide[] = [
     kind: "close",
     kicker: "Remember",
     title: "Hide ≠ pause.",
-    bullets: ["Never auto-delete.", "Readout, not a control plane.", "Analyze is parked."],
+    bullets: ["Never auto-delete real Bots.", "Readout, not a control plane.", "Analyze is parked."],
     cta: { href: "/", label: "Open the map" },
   },
 ];
@@ -204,6 +204,8 @@ export function PitchDeck() {
     setIndex(Math.min(SLIDES.length - 1, Math.max(0, next)));
   }, []);
 
+  const skipFirstHashWrite = useRef(true);
+
   useEffect(() => {
     const applyHash = () => {
       const n = Number.parseInt(window.location.hash.replace("#", ""), 10);
@@ -215,6 +217,11 @@ export function PitchDeck() {
   }, []);
 
   useEffect(() => {
+    // Skip the mount write so `#4` is not replaced with `#1` before applyHash lands.
+    if (skipFirstHashWrite.current) {
+      skipFirstHashWrite.current = false;
+      return;
+    }
     const next = `#${index + 1}`;
     if (window.location.hash !== next) {
       history.replaceState(null, "", `${window.location.pathname}${next}`);
@@ -278,7 +285,7 @@ export function PitchDeck() {
   const slide = SLIDES[index];
   const showGithub = slide.kind === "title" || slide.kind === "close";
 
-  let footerRight: ReactNode = showGithub ? GITHUB : "\u00a0";
+  const footerRight: ReactNode = showGithub ? GITHUB : "\u00a0";
 
   return (
     <main className="pitch">

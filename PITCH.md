@@ -20,7 +20,7 @@ Cap is 50 Bots + spaces. Groups are 2–6.
 Hide ≠ pause. No official roster API.
 CoS sees the mess. Humans cannot.
 
-## 3. What it is
+## 3. Product
 
 Readout, not a second control plane.
 Edit names from the sidebar.
@@ -31,6 +31,7 @@ Nothing fires a Bot. Analyze is parked.
 
 ## 4. Demo
 
+Title: Open. You are Logan.
 Source of truth: [DEMO.md](DEMO.md). Do this live on `/`. Starter node is Logan. Org id is mine.
 
 1. Open Eye of Grok. You are the only node.
@@ -41,7 +42,7 @@ Source of truth: [DEMO.md](DEMO.md). Do this live on `/`. Starter node is Logan.
 ## 5. Remember
 
 Hide ≠ pause.
-Never auto-delete.
+Never auto-delete real Bots.
 Readout, not a control plane.
 Analyze is parked.
 CTA: Open the map `/`.
