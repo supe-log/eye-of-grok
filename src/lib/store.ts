@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
-import { createMessyStartupFixture } from "./fixture";
+import { createMySetupFixture } from "./my-setup";
 import { orgSnapshotSchema } from "./schema";
 import { DEFAULT_ORG_ID, type OrgSnapshot } from "./types";
 
@@ -25,7 +25,7 @@ export function getOrg(orgId: string): OrgSnapshot | null {
   const file = fileFor(orgId);
   if (!existsSync(file)) {
     if (orgId === DEFAULT_ORG_ID) {
-      return saveOrg(createMessyStartupFixture());
+      return saveOrg(createMySetupFixture());
     }
     return null;
   }
@@ -34,7 +34,7 @@ export function getOrg(orgId: string): OrgSnapshot | null {
 }
 
 export function resetOrg(orgId: string = DEFAULT_ORG_ID): OrgSnapshot {
-  const fixture = createMessyStartupFixture();
+  const fixture = createMySetupFixture();
   fixture.orgId = orgId;
   return saveOrg(fixture);
 }

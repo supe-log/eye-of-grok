@@ -6,15 +6,23 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
-  type Edge,
-  type Node,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useMemo, useState } from "react";
-import { snapshotToFlow, type OrgFlowEdgeData, type OrgFlowNodeData } from "@/lib/layout-graph";
+import { addLink, addNode, removeNode, setNodeStatus } from "@/lib/graph-edit";
+import { snapshotToFlow } from "@/lib/layout-graph";
 import { snapshotToMermaid } from "@/lib/mermaid";
-import { hygieneCandidates, snapshotCapacity } from "@/lib/capacity";
-import { DEFAULT_ORG_ID, type AnalyzeResult, type OrgSnapshot } from "@/lib/types";
+import { snapshotCapacity } from "@/lib/capacity";
+import {
+  DEFAULT_ORG_ID,
+  EDGE_KINDS,
+  NODE_KINDS,
+  NODE_STATUSES,
+  type EdgeKind,
+  type NodeKind,
+  type NodeStatus,
+  type OrgSnapshot,
+} from "@/lib/types";
 import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, isProblemStatus, relativeTime } from "@/lib/status-style";
 import { MermaidView } from "./MermaidView";
 import { OrgNode, type OrgFlowNode } from "./OrgNode";
@@ -22,7 +30,7 @@ import { OrgNode, type OrgFlowNode } from "./OrgNode";
 const nodeTypes = { org: OrgNode };
 const ORG_ID = DEFAULT_ORG_ID;
 
-type Tab = "inspect" | "hygiene" | "onboard" | "push" | "mermaid" | "connect";
+type Tab = "inspect" | "edit" | "mermaid" | "connect";
 
 export function OrgWorkbench({
   initialSnapshot,
@@ -43,152 +51,93 @@ function WorkbenchInner({
 }) {
   const [snapshot, setSnapshot] = useState<OrgSnapshot>(initialSnapshot);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>("bot-cos");
-  const [hygiene, setHygiene] = useState(false);
-  const [tab, setTab] = useState<Tab>("inspect");
-  const [analysis, setAnalysis] = useState<AnalyzeResult | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
-  const [ingestText, setIngestText] = useState(() =>
-    JSON.stringify(initialSnapshot, null, 2),
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSnapshot.nodes[0]?.id ?? null,
   );
+  const [hygiene, setHygiene] = useState(false);
+  const [tab, setTab] = useState<Tab>("edit");
   const [ingestToken, setIngestToken] = useState("hackathon-demo");
-  const [ingestMsg, setIngestMsg] = useState<string | null>(null);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async (reset = false) => {
+  const persist = useCallback(
+    async (next: OrgSnapshot) => {
+      setBusy(true);
+      setSaveMsg(null);
+      try {
+        const res = await fetch(`/api/orgs/${ORG_ID}/snapshot`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${ingestToken}`,
+          },
+          body: JSON.stringify(next),
+        });
+        const body = (await res.json()) as OrgSnapshot & { detail?: string; error?: string };
+        if (!res.ok || !body.nodes) {
+          setSaveMsg(body.detail || body.error || `Save failed (${res.status})`);
+          return;
+        }
+        setSnapshot(body);
+        setSaveMsg(`Saved ${body.nodes.length} nodes`);
+      } catch (error) {
+        setSaveMsg(error instanceof Error ? error.message : "Save failed");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [ingestToken],
+  );
+
+  const apply = useCallback(
+    (next: OrgSnapshot) => {
+      setSnapshot(next);
+      void persist(next);
+    },
+    [persist],
+  );
+
+  const reset = useCallback(async () => {
     setLoadError(null);
-    const url = reset ? `/api/orgs/${ORG_ID}?reset=1` : `/api/orgs/${ORG_ID}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(`/api/orgs/${ORG_ID}?reset=1`, { cache: "no-store" });
     if (!res.ok) {
-      setLoadError(`Could not load org (${res.status})`);
+      setLoadError(`Could not reset (${res.status})`);
       return;
     }
     const next = (await res.json()) as OrgSnapshot;
     setSnapshot(next);
-    setAnalysis(null);
-    setIngestText(JSON.stringify(next, null, 2));
+    setSelectedId(next.nodes[0]?.id ?? null);
+    setSaveMsg("Starter reset");
   }, []);
 
-  const recommendedIds = useMemo(() => {
-    if (!analysis) return new Set<string>();
-    return new Set(
-      analysis.recommendations
-        .filter((rec) => rec.action !== "keep")
-        .flatMap((rec) => rec.nodeIds),
-    );
-  }, [analysis]);
-
   const flow = useMemo(() => {
-    if (!snapshot) return { nodes: [] as Node<OrgFlowNodeData>[], edges: [] as Edge<OrgFlowEdgeData>[] };
     const laid = snapshotToFlow(snapshot);
-    const overstaffed = new Set(snapshotCapacity(snapshot).overstaffedGroupIds);
     return {
       nodes: laid.nodes.map((node) => {
-        const status = node.data.orgNode.status;
-        const flagged =
-          isProblemStatus(status) ||
-          overstaffed.has(node.id) ||
-          recommendedIds.has(node.id);
-        const dimmed = hygiene && !flagged;
+        const flagged = isProblemStatus(node.data.orgNode.status);
         return {
           ...node,
           data: {
             ...node.data,
-            dimmed,
-            recommended: hygiene || Boolean(analysis) ? flagged : false,
+            dimmed: hygiene && !flagged,
+            recommended: hygiene && flagged,
           },
         };
       }),
       edges: laid.edges,
     };
-  }, [snapshot, hygiene, recommendedIds, analysis]);
+  }, [snapshot, hygiene]);
 
-  const selected = snapshot?.nodes.find((node) => node.id === selectedId) ?? null;
-  const capacity = snapshot ? snapshotCapacity(snapshot) : null;
-  const mermaid = snapshot ? snapshotToMermaid(snapshot) : "";
-  const candidates = snapshot ? hygieneCandidates(snapshot) : [];
-
-  async function runAnalyze() {
-    setAnalyzing(true);
-    setAnalyzeError(null);
-    try {
-      const res = await fetch(`/api/orgs/${ORG_ID}/analyze`, { method: "POST" });
-      if (!res.ok) {
-        setAnalyzeError(`Analyze failed (${res.status})`);
-        return;
-      }
-      const next = (await res.json()) as AnalyzeResult;
-      setAnalysis(next);
-      setHygiene(true);
-      setTab("hygiene");
-    } catch (error) {
-      setAnalyzeError(error instanceof Error ? error.message : "Analyze failed");
-    } finally {
-      setAnalyzing(false);
-    }
-  }
-
-  async function pushSnapshot() {
-    setBusy(true);
-    setIngestMsg(null);
-    try {
-      const parsed = JSON.parse(ingestText) as unknown;
-      const res = await fetch(`/api/orgs/${ORG_ID}/snapshot`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${ingestToken}`,
-        },
-        body: JSON.stringify(parsed),
-      });
-      const body = (await res.json()) as {
-        orgId?: string;
-        pushedAt?: string;
-        nodes?: OrgSnapshot["nodes"];
-        error?: string;
-        detail?: string;
-      };
-      if (!res.ok || !body.nodes || !body.pushedAt) {
-        setIngestMsg(body.detail || body.error || `Push failed (${res.status})`);
-        return;
-      }
-      const saved = body as OrgSnapshot;
-      setSnapshot(saved);
-      setAnalysis(null);
-      setIngestMsg(`Pushed ${saved.nodes.length} nodes at ${saved.pushedAt}`);
-    } catch (error) {
-      setIngestMsg(error instanceof Error ? error.message : "Invalid JSON");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (loadError) {
-    return (
-      <main className="shell">
-        <p className="panel-error">{loadError}</p>
-        <button type="button" className="btn" onClick={() => void load()}>
-          Retry
-        </button>
-      </main>
-    );
-  }
-
-  if (!capacity) {
-    return (
-      <main className="shell">
-        <p className="muted">Loading roster…</p>
-      </main>
-    );
-  }
+  const selected = snapshot.nodes.find((node) => node.id === selectedId) ?? null;
+  const capacity = snapshotCapacity(snapshot);
+  const mermaid = snapshotToMermaid(snapshot);
 
   return (
     <main className="shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">Roster</span>
-          <span className="brand-sub">Grok Bot org map</span>
+          <span className="brand-mark">Eye of Grok</span>
+          <span className="brand-sub">Your Grok Bot setup</span>
         </div>
         <div className="gauges">
           <Gauge
@@ -201,8 +150,7 @@ function WorkbenchInner({
             value={String(capacity.overstaffedGroupIds.length)}
             warn={capacity.overstaffedGroupIds.length > 0}
           />
-          <Gauge label="Pushed" value={relativeTime(snapshot.pushedAt)} />
-          <Gauge label="Source" value={snapshot.source.replaceAll("_", " ")} />
+          <Gauge label="Updated" value={relativeTime(snapshot.pushedAt)} />
         </div>
         <div className="top-actions">
           <label className="toggle">
@@ -211,16 +159,19 @@ function WorkbenchInner({
               checked={hygiene}
               onChange={(event) => setHygiene(event.target.checked)}
             />
-            Hygiene
+            Flag stale
           </label>
-          <button type="button" className="btn btn-ghost" onClick={() => void load(true)}>
-            Reset fixture
+          <button type="button" className="btn btn-ghost" onClick={() => void reset()}>
+            Reset starter
           </button>
-          <button type="button" className="btn" disabled={analyzing} onClick={() => void runAnalyze()}>
-            {analyzing ? "Asking Grok…" : "Analyze with Grok"}
+          <button type="button" className="btn" onClick={() => setTab("edit")}>
+            Add to map
           </button>
         </div>
       </header>
+
+      {loadError && <p className="panel-error">{loadError}</p>}
+      {saveMsg && <p className="muted">{busy ? "Saving…" : saveMsg}</p>}
 
       <section className="stage">
         <div className="canvas">
@@ -229,14 +180,13 @@ function WorkbenchInner({
             edges={flow.edges}
             nodeTypes={nodeTypes}
             fitView
-            fitViewOptions={{ padding: 0.18 }}
+            fitViewOptions={{ padding: 0.22 }}
             minZoom={0.35}
             maxZoom={1.6}
             onNodeClick={(_event, node) => {
               setSelectedId(node.id);
               setTab("inspect");
             }}
-            nodesDraggable={false}
             nodesConnectable={false}
             edgesFocusable={false}
           >
@@ -256,9 +206,7 @@ function WorkbenchInner({
             {(
               [
                 ["inspect", "Inspect"],
-                ["hygiene", "Hygiene"],
-                ["onboard", "Onboard"],
-                ["push", "Push"],
+                ["edit", "Edit"],
                 ["mermaid", "Mermaid"],
                 ["connect", "Connect"],
               ] as const
@@ -281,35 +229,25 @@ function WorkbenchInner({
                 snapshot={snapshot}
                 selected={selected}
                 onSelect={setSelectedId}
+                onStatus={(id, status) => apply(setNodeStatus(snapshot, id, status))}
+                onRemove={(id) => apply(removeNode(snapshot, id))}
               />
             )}
-            {tab === "hygiene" && (
-              <HygienePanel
+            {tab === "edit" && (
+              <EditPanel
                 snapshot={snapshot}
-                candidates={candidates}
-                analysis={analysis}
-                analyzeError={analyzeError}
-                onSelect={setSelectedId}
+                onAdd={(next) => {
+                  apply(next);
+                  const added = next.nodes[next.nodes.length - 1];
+                  if (added) setSelectedId(added.id);
+                }}
+                onLink={(next) => apply(next)}
               />
             )}
-            {tab === "onboard" && (
-              <OnboardPanel snapshot={snapshot} analysis={analysis} onSelect={setSelectedId} />
+            {tab === "mermaid" && <MermaidPanel current={mermaid} />}
+            {tab === "connect" && (
+              <ConnectPanel token={ingestToken} onToken={setIngestToken} />
             )}
-            {tab === "push" && (
-              <PushPanel
-                ingestText={ingestText}
-                ingestToken={ingestToken}
-                ingestMsg={ingestMsg}
-                busy={busy}
-                onText={setIngestText}
-                onToken={setIngestToken}
-                onPush={() => void pushSnapshot()}
-              />
-            )}
-            {tab === "mermaid" && (
-              <MermaidPanel current={mermaid} lean={analysis?.leanMermaid} />
-            )}
-            {tab === "connect" && <ConnectPanel token={ingestToken} />}
           </div>
         </aside>
       </section>
@@ -338,10 +276,14 @@ function InspectPanel({
   snapshot,
   selected,
   onSelect,
+  onStatus,
+  onRemove,
 }: {
   snapshot: OrgSnapshot;
   selected: OrgSnapshot["nodes"][number] | null;
   onSelect: (id: string) => void;
+  onStatus: (id: string, status: NodeStatus) => void;
+  onRemove: (id: string) => void;
 }) {
   const memberships = selected
     ? snapshot.edges
@@ -363,7 +305,7 @@ function InspectPanel({
           </p>
           <h2>{selected.name}</h2>
           <p className="lede">{selected.title}</p>
-          <p className="body">{selected.notes ?? "No notes in this snapshot."}</p>
+          <p className="body">{selected.notes ?? "No notes yet."}</p>
           <dl className="meta">
             <div>
               <dt>Last active</dt>
@@ -378,26 +320,44 @@ function InspectPanel({
           </dl>
           {selected.kind === "bot" && (
             <p className="callout">
-              Memory is this Bot&apos;s. Tools and the computer are account-level. Hiding does not pause
-              routines. Prefer hide over delete.
+              Memory is this Bot&apos;s. Tools and the computer are account-level. Hide does not
+              pause routines.
             </p>
           )}
           {memberships.length > 0 && (
             <p className="muted">Spaces: {memberships.join(", ")}</p>
           )}
           {members.length > 0 && <p className="muted">Members: {members.join(", ")}</p>}
+          <label className="field">
+            <span>Status</span>
+            <select
+              value={selected.status}
+              onChange={(event) => onStatus(selected.id, event.target.value as NodeStatus)}
+            >
+              {NODE_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {STATUS_LABEL[status]}
+                </option>
+              ))}
+            </select>
+          </label>
+          {selected.kind !== "human" && (
+            <button type="button" className="btn btn-ghost" onClick={() => onRemove(selected.id)}>
+              Remove from map
+            </button>
+          )}
         </>
       ) : (
-        <p className="muted">Click a node to inspect it.</p>
+        <p className="muted">Click a node, or add one from Edit.</p>
       )}
-      <h3>Roster</h3>
+      <h3>Your setup</h3>
       <ul className="roster">
         {snapshot.nodes.map((node) => (
           <li key={node.id}>
             <button type="button" onClick={() => onSelect(node.id)}>
               <i style={{ background: STATUS_COLOR[node.status] }} />
               <span>{node.name}</span>
-              <em>{node.title}</em>
+              <em>{node.title ?? KIND_LABEL[node.kind]}</em>
             </button>
           </li>
         ))}
@@ -406,208 +366,215 @@ function InspectPanel({
   );
 }
 
-function HygienePanel({
+function EditPanel({
   snapshot,
-  candidates,
-  analysis,
-  analyzeError,
-  onSelect,
+  onAdd,
+  onLink,
 }: {
   snapshot: OrgSnapshot;
-  candidates: OrgSnapshot["nodes"];
-  analysis: AnalyzeResult | null;
-  analyzeError: string | null;
-  onSelect: (id: string) => void;
+  onAdd: (next: OrgSnapshot) => void;
+  onLink: (next: OrgSnapshot) => void;
 }) {
+  const [kind, setKind] = useState<NodeKind>("bot");
+  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
+  const [status, setStatus] = useState<NodeStatus>("active");
+  const [notes, setNotes] = useState("");
+  const humansAndBots = snapshot.nodes.filter((node) => node.kind !== "group");
+  const groups = snapshot.nodes.filter((node) => node.kind === "group");
+  const defaultReportsTo = humansAndBots[0]?.id ?? "";
+  const [reportsTo, setReportsTo] = useState(defaultReportsTo);
+  const [memberOf, setMemberOf] = useState("");
+  const [linkFrom, setLinkFrom] = useState(snapshot.nodes[0]?.id ?? "");
+  const [linkTo, setLinkTo] = useState(snapshot.nodes[1]?.id ?? snapshot.nodes[0]?.id ?? "");
+  const [linkKind, setLinkKind] = useState<EdgeKind>("handoff");
+
   return (
     <div className="stack">
-      <p className="kicker">Cleanup candidates</p>
-      <h2>Lean the roster</h2>
+      <p className="kicker">Your roster</p>
+      <h2>Add a Bot or space</h2>
       <p className="body">
-        Recommendations only. Nothing here deletes a Bot. Hide is safer; hidden Bots can still run
-        routines.
+        There is no official Grok Bot export yet. Type the bots and group chats from your sidebar.
       </p>
-      {analyzeError && <p className="panel-error">{analyzeError}</p>}
-      {analysis && (
-        <p className="callout">
-          Plan from <strong>{analysis.source}</strong>. {analysis.recommendations.length} moves.
-        </p>
-      )}
-      {analysis?.recommendations.map((rec) => (
-        <article key={`${rec.action}-${rec.nodeIds.join("-")}`} className="rec">
-          <p className="rec-action">{rec.action.replaceAll("_", " ")}</p>
-          <p className="body">{rec.why}</p>
-          <p className="muted">
-            {rec.nodeIds
-              .map((id) => snapshot.nodes.find((node) => node.id === id)?.name ?? id)
-              .join(" · ")}
-          </p>
-          <div className="chip-row">
-            {rec.nodeIds.map((id) => (
-              <button key={id} type="button" className="chip" onClick={() => onSelect(id)}>
-                {id}
-              </button>
+      <label className="field">
+        <span>Kind</span>
+        <select value={kind} onChange={(event) => setKind(event.target.value as NodeKind)}>
+          {NODE_KINDS.map((item) => (
+            <option key={item} value={item}>
+              {KIND_LABEL[item]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
+        <span>Name</span>
+        <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Casey" />
+      </label>
+      <label className="field">
+        <span>Title / job</span>
+        <input
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Chief of Staff"
+        />
+      </label>
+      <label className="field">
+        <span>Status</span>
+        <select value={status} onChange={(event) => setStatus(event.target.value as NodeStatus)}>
+          {NODE_STATUSES.map((item) => (
+            <option key={item} value={item}>
+              {STATUS_LABEL[item]}
+            </option>
+          ))}
+        </select>
+      </label>
+      {kind !== "human" && humansAndBots.length > 0 && (
+        <label className="field">
+          <span>Reports to</span>
+          <select value={reportsTo} onChange={(event) => setReportsTo(event.target.value)}>
+            <option value="">None</option>
+            {humansAndBots.map((node) => (
+              <option key={node.id} value={node.id}>
+                {node.name}
+              </option>
             ))}
-          </div>
-        </article>
-      ))}
-      <h3>Status flags</h3>
-      <ul className="roster">
-        {candidates.map((node) => (
-          <li key={node.id}>
-            <button type="button" onClick={() => onSelect(node.id)}>
-              <i style={{ background: STATUS_COLOR[node.status] }} />
-              <span>{node.name}</span>
-              <em>{STATUS_LABEL[node.status]}</em>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function OnboardPanel({
-  snapshot,
-  analysis,
-  onSelect,
-}: {
-  snapshot: OrgSnapshot;
-  analysis: AnalyzeResult | null;
-  onSelect: (id: string) => void;
-}) {
-  const activeBots = snapshot.nodes.filter(
-    (node) => node.kind === "bot" && node.status === "active",
-  );
-  return (
-    <div className="stack">
-      <p className="kicker">New human</p>
-      <h2>Who to talk to</h2>
-      {analysis ? (
-        <p className="body">{analysis.onboarding}</p>
-      ) : (
-        <p className="body">
-          Run Analyze to let Grok write this brief. Until then: talk to Casey first, then the named
-          specialist for the lane.
-        </p>
+          </select>
+        </label>
       )}
-      <ul className="roster">
-        {activeBots.map((node) => (
-          <li key={node.id}>
-            <button type="button" onClick={() => onSelect(node.id)}>
-              <i style={{ background: STATUS_COLOR[node.status] }} />
-              <span>{node.name}</span>
-              <em>{node.title}</em>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function PushPanel({
-  ingestText,
-  ingestToken,
-  ingestMsg,
-  busy,
-  onText,
-  onToken,
-  onPush,
-}: {
-  ingestText: string;
-  ingestToken: string;
-  ingestMsg: string | null;
-  busy: boolean;
-  onText: (value: string) => void;
-  onToken: (value: string) => void;
-  onPush: () => void;
-}) {
-  return (
-    <div className="stack">
-      <p className="kicker">Chief of Staff</p>
-      <h2>Push a snapshot</h2>
-      <p className="body">
-        Same contract the Bot hits. Paste JSON or POST{" "}
-        <code> /api/orgs/{DEFAULT_ORG_ID}/snapshot</code> with a bearer token.
-      </p>
+      {kind === "bot" && groups.length > 0 && (
+        <label className="field">
+          <span>Member of space</span>
+          <select value={memberOf} onChange={(event) => setMemberOf(event.target.value)}>
+            <option value="">None</option>
+            {groups.map((node) => (
+              <option key={node.id} value={node.id}>
+                {node.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <label className="field">
-        <span>Ingest token</span>
-        <input value={ingestToken} onChange={(event) => onToken(event.target.value)} />
+        <span>Notes</span>
+        <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
       </label>
-      <label className="field">
-        <span>Org snapshot JSON</span>
-        <textarea value={ingestText} onChange={(event) => onText(event.target.value)} rows={16} />
-      </label>
-      <button type="button" className="btn" disabled={busy} onClick={onPush}>
-        {busy ? "Pushing…" : "Push snapshot"}
+      <button
+        type="button"
+        className="btn"
+        disabled={!name.trim()}
+        onClick={() => {
+          onAdd(
+            addNode(snapshot, {
+              name,
+              title,
+              kind,
+              status,
+              notes,
+              reportsTo: kind === "human" ? undefined : reportsTo || undefined,
+              memberOf: kind === "bot" ? memberOf || undefined : undefined,
+            }),
+          );
+          setName("");
+          setTitle("");
+          setNotes("");
+        }}
+      >
+        Add to map
       </button>
-      {ingestMsg && <p className="callout">{ingestMsg}</p>}
+
+      <h3>Connect two nodes</h3>
+      <label className="field">
+        <span>From</span>
+        <select value={linkFrom} onChange={(event) => setLinkFrom(event.target.value)}>
+          {snapshot.nodes.map((node) => (
+            <option key={node.id} value={node.id}>
+              {node.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
+        <span>To</span>
+        <select value={linkTo} onChange={(event) => setLinkTo(event.target.value)}>
+          {snapshot.nodes.map((node) => (
+            <option key={node.id} value={node.id}>
+              {node.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
+        <span>Link</span>
+        <select value={linkKind} onChange={(event) => setLinkKind(event.target.value as EdgeKind)}>
+          {EDGE_KINDS.map((item) => (
+            <option key={item} value={item}>
+              {item.replaceAll("_", " ")}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button
+        type="button"
+        className="btn btn-ghost"
+        disabled={!linkFrom || !linkTo || linkFrom === linkTo}
+        onClick={() => onLink(addLink(snapshot, { from: linkFrom, to: linkTo, kind: linkKind }))}
+      >
+        Add link
+      </button>
     </div>
   );
 }
 
-function MermaidPanel({ current, lean }: { current: string; lean?: string }) {
-  const [mode, setMode] = useState<"current" | "lean">("current");
-  const source = mode === "lean" && lean ? lean : current;
+function MermaidPanel({ current }: { current: string }) {
   return (
     <div className="stack">
       <p className="kicker">Export</p>
       <h2>Mermaid flowchart</h2>
-      <p className="body">Interchange view. The map is the product. Paste this into a chat or doc.</p>
+      <p className="body">Copy this into a chat or doc. The map is the product.</p>
       <div className="chip-row">
-        <button type="button" className="chip" data-on={mode === "current"} onClick={() => setMode("current")}>
-          Current
-        </button>
         <button
           type="button"
           className="chip"
-          data-on={mode === "lean"}
-          disabled={!lean}
-          onClick={() => setMode("lean")}
-        >
-          Lean plan
-        </button>
-        <button
-          type="button"
-          className="chip"
-          onClick={() => void navigator.clipboard.writeText(source)}
+          onClick={() => void navigator.clipboard.writeText(current)}
         >
           Copy source
         </button>
       </div>
-      <MermaidView source={source} />
-      <pre className="codeblock">{source}</pre>
+      <MermaidView source={current} />
+      <pre className="codeblock">{current}</pre>
     </div>
   );
 }
 
-function ConnectPanel({ token }: { token: string }) {
+function ConnectPanel({
+  token,
+  onToken,
+}: {
+  token: string;
+  onToken: (value: string) => void;
+}) {
   return (
     <div className="stack">
-      <p className="kicker">Give this to Casey</p>
-      <h2>Website + MCP</h2>
+      <p className="kicker">Later</p>
+      <h2>Chief of Staff push</h2>
       <p className="body">
-        Hand the Chief of Staff this site, or attach the MCP URL in chat. It can push the roster,
-        read the map, and ask for a lean plan. It cannot delete Bots.
+        When you want Casey to update the map, give them this site or the MCP URL. Analyze is parked
+        until you add an xAI key.
       </p>
-      <pre className="codeblock">{`REST
-GET  /api/orgs/${DEFAULT_ORG_ID}
+      <label className="field">
+        <span>Ingest token</span>
+        <input value={token} onChange={(event) => onToken(event.target.value)} />
+      </label>
+      <pre className="codeblock">{`GET  /api/orgs/${DEFAULT_ORG_ID}
 POST /api/orgs/${DEFAULT_ORG_ID}/snapshot
 GET  /api/orgs/${DEFAULT_ORG_ID}/mermaid
-POST /api/orgs/${DEFAULT_ORG_ID}/analyze
 
 MCP  /api/mcp
 Authorization: Bearer ${token}
 
 tools
   push_org_snapshot
-  get_org_view
-  analyze_org`}</pre>
-      <p className="callout">
-        Grok Bot adds a remote MCP server by asking the Bot in chat with the HTTPS URL. Locally,
-        tunnel this app first.
-      </p>
+  get_org_view`}</pre>
     </div>
   );
 }

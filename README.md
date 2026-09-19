@@ -1,43 +1,34 @@
 # Eye of Grok
 
-A human-facing map of a Grok Bot account: bots, group spaces, stale rooms, and a lean cleanup plan. The Chief of Staff pushes the roster. People judge. Nothing deletes a Bot.
+A visualizer for **your** Grok Bot setup: bots, group spaces, and the lines between them.
+
+Analyze / lean-up is parked. No xAI key required.
 
 Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)
 
-## Why
-
-Grok Bot scales like a company. Fifty bots and group chats, six people per room, per-bot memory, a shared computer, hidden bots that still run routines. There is no official roster API and no org dashboard — xAI left coordination to a Chief of Staff. This site is the readout that Bot writes to.
+- Architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
+- Teammates (clone / push): [TEAM.md](TEAM.md)
+- Demo walkthrough: [DEMO.md](DEMO.md)
 
 ## Run
 
 ```bash
 npm install
-cp .env.example .env.local
-# optional: add XAI_API_KEY so Analyze uses grok-4.6
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The messy startup fixture loads on first request.
+Open the URL Next prints (often [http://localhost:3000](http://localhost:3000)). You start as Logan. Add Bots and spaces from **Edit**.
 
-## Demo (90 seconds)
-
-See [DEMO.md](./DEMO.md).
+Grok Bot has no official roster export. Type names from your sidebar. A Chief of Staff can also `POST` a snapshot later.
 
 ## API
 
 | Method | Path | Auth | What |
 | --- | --- | --- | --- |
-| GET | `/api/orgs/startup` | no | Current snapshot (seeds fixture) |
-| GET | `/api/orgs/startup?reset=1` | no | Replace with the fixture |
-| POST | `/api/orgs/startup/snapshot` | Bearer | Push / replace the graph |
-| GET | `/api/orgs/startup/mermaid` | no | Flowchart source |
-| POST | `/api/orgs/startup/analyze` | no | Grok 4.6 lean plan (heuristic fallback) |
-| GET/POST | `/api/mcp` | Bearer on writes | `push_org_snapshot`, `get_org_view`, `analyze_org` |
+| GET | `/api/orgs/mine` | no | Current map (seeds a starter) |
+| GET | `/api/orgs/mine?reset=1` | no | Back to Logan-only starter |
+| POST | `/api/orgs/mine/snapshot` | Bearer | Replace the graph |
+| GET | `/api/orgs/mine/mermaid` | no | Flowchart export |
+| GET/POST | `/api/mcp` | Bearer on writes | `push_org_snapshot`, `get_org_view` |
 
 Default ingest token: `hackathon-demo`.
-
-Give the Chief of Staff the website URL, or a public HTTPS MCP URL (`/api/mcp`) plus the bearer token. In Grok Bot, add a remote MCP server by asking the Bot in chat. This app does not hide or delete real Bots.
-
-## Schema
-
-`OrgSnapshot` is the source of truth. Mermaid is an export. Nodes: `bot` | `group` | `human`. Status: `active` | `stale` | `hidden` | `deprecated` | `duplicate`. Edges: `reports_to` | `member_of` | `handoff` | `shares_context`.

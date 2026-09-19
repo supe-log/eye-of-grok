@@ -77,6 +77,6 @@ export type AnalyzeResult = {
   leanMermaid?: string;
 };
 
-export const DEFAULT_ORG_ID = "startup";
+export const DEFAULT_ORG_ID = "mine";
 export const ACCOUNT_BOT_GROUP_LIMIT = 50;
 export const GROUP_MEMBER_LIMIT = 6;
