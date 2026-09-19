@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAuthorized, unauthorized } from "@/lib/auth";
-import { isLoopbackRequest } from "@/lib/loopback";
+import { isAuthorizedForOrg, unauthorized } from "@/lib/auth";
 import { listOrgRevisions, restoreOrgRevision } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -19,8 +18,8 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  if (!isAuthorized(request) && !isLoopbackRequest(request)) return unauthorized();
   const { id } = await context.params;
+  if (!(await isAuthorizedForOrg(request, id))) return unauthorized();
   let body: unknown;
   try {
     body = await request.json();

@@ -6,11 +6,12 @@ import { orgSnapshotSchema } from "./schema";
 import { getOrg, upsertOrg } from "./store";
 import { DEFAULT_ORG_ID } from "./types";
 
-export function createOrgMcpServer(): McpServer {
+export function createOrgMcpServer(options?: { writerOrgId?: string }): McpServer {
   const server = new McpServer({
     name: "grokbot-org",
     version: "0.1.0",
   });
+  const writerOrgId = options?.writerOrgId;
 
   server.registerTool(
     "push_org_snapshot",
@@ -19,12 +20,24 @@ export function createOrgMcpServer(): McpServer {
       description:
         "Replace the Grok Bot org map with a roster snapshot. Names, titles, statuses, memberships only — no transcripts or memory.",
       inputSchema: {
-        orgId: z.string().default(DEFAULT_ORG_ID),
+        orgId: z.string().default(writerOrgId ?? DEFAULT_ORG_ID),
         snapshot: orgSnapshotSchema,
       },
     },
     async ({ orgId, snapshot }) => {
-      const saved = await upsertOrg(orgId, snapshot, "chief_of_staff");
+      const target = orgId || snapshot.orgId;
+      if (writerOrgId && target !== writerOrgId) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `forbidden: bearer is scoped to ${writerOrgId}, not ${target}`,
+            },
+          ],
+        };
+      }
+      const saved = await upsertOrg(target, snapshot, "chief_of_staff");
       return {
         content: [
           {

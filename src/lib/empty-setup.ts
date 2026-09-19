@@ -1,8 +1,8 @@
 import { displayNameFromOrgId } from "./org-id";
 import type { OrgSnapshot } from "./types";
 
-export function createEmptySetup(orgId: string): OrgSnapshot {
-  const name = displayNameFromOrgId(orgId) || "You";
+export function createEmptySetup(orgId: string, ownerName?: string): OrgSnapshot {
+  const name = ownerName?.trim() || displayNameFromOrgId(orgId) || "You";
   return {
     orgId,
     pushedAt: new Date().toISOString(),

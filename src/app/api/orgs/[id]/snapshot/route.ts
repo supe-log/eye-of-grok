@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAuthorized, unauthorized } from "@/lib/auth";
-import { isLoopbackRequest } from "@/lib/loopback";
+import { isAuthorizedForOrg, unauthorized } from "@/lib/auth";
 import { upsertOrg } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -10,8 +9,9 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  if (!isAuthorized(request) && !isLoopbackRequest(request)) return unauthorized();
   const { id } = await context.params;
+  if (!(await isAuthorizedForOrg(request, id))) return unauthorized();
+
   let body: unknown;
   try {
     body = await request.json();
@@ -23,12 +23,18 @@ export async function POST(
     const snapshot = await upsertOrg(id, body, "chief_of_staff");
     return NextResponse.json(snapshot);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "schema failed";
+    const status = message === "org_not_claimed" ? 404 : 400;
     return NextResponse.json(
       {
-        error: "invalid_snapshot",
-        detail: error instanceof Error ? error.message : "schema failed",
+        error: message === "org_not_claimed" ? "org_not_claimed" : "invalid_snapshot",
+        detail: message,
+        hint:
+          message === "org_not_claimed"
+            ? "Claim this slug on the home page first so a write token exists."
+            : undefined,
       },
-      { status: 400 },
+      { status },
     );
   }
 }

@@ -1,5 +1,3 @@
-import { getIngestToken } from "./auth";
-
 export const LOCAL_SNAPSHOT_URL = "http://127.0.0.1:3002/api/local/snapshot";
 
 export function publicOrigin(): string {
@@ -27,11 +25,11 @@ export function mcpUrl(origin: string): string {
 export function createBotSharePrompt(input: {
   origin: string;
   orgId: string;
-  token?: string;
+  token: string;
   ownerName?: string;
 }): string {
   const origin = input.origin.replace(/\/$/, "");
-  const token = input.token ?? getIngestToken();
+  const token = input.token;
   const owner = input.ownerName ?? input.orgId;
   const view = mapUrl(origin, input.orgId);
   const post = snapshotPostUrl(origin, input.orgId);
@@ -83,10 +81,10 @@ Then reply with the node count and ${view}`;
 export function createBotSpeakLine(input: {
   origin: string;
   orgId: string;
-  token?: string;
+  token: string;
 }): string {
   const origin = input.origin.replace(/\/$/, "");
-  const token = input.token ?? getIngestToken();
+  const token = input.token;
   const view = mapUrl(origin, input.orgId);
   const post = snapshotPostUrl(origin, input.orgId);
   return `Push my entire Grok Bot setup into Eye of Grok right now. POST every Bot, group chat, sidebar section, status (active/stale/hidden/deprecated/duplicate), reporting lines, and account tool/plugin/MCP names (no transcripts or keys) to ${post} with header Authorization: Bearer ${token}. orgId is "${input.orgId}". Then give me ${view}`;

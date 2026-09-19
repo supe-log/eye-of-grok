@@ -558,3 +558,50 @@ textarea {
 .share-foot a {
   color: var(--accent);
 }
+
+.share-ok {
+  color: var(--good);
+  font-size: 14px;
+}
+
+.gallery-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gallery-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: #141210;
+  color: inherit;
+  text-decoration: none;
+}
+
+.gallery-card:hover {
+  border-color: var(--accent);
+}
+
+.gallery-card-copy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: baseline;
+}
+
+.gallery-card-copy strong {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.gallery-card-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
