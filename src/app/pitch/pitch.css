@@ -1,0 +1,266 @@
+/* Pitch deck only. Map / org workbench styles stay in globals.css.
+   Theme: data-theme="anthropic" (default CursorParty cream/terracotta)
+          data-theme="bw"        (black and white toggle)
+   Do not mix SpaceX branding, logos, or official fonts into this deck. */
+
+.pitch-fonts {
+  height: 100%;
+}
+
+.pitch {
+  --pitch-sans: var(--font-pitch-sans), "Poppins", Arial, sans-serif;
+  --pitch-serif: var(--font-pitch-serif), Lora, Georgia, serif;
+  height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  background: var(--pitch-letterbox);
+  color: var(--pitch-ink);
+}
+
+/* === Anthropic (default) === */
+.pitch[data-theme="anthropic"] {
+  --pitch-bg: #faf9f5;
+  --pitch-ink: #141413;
+  --pitch-muted: #6f6d66;
+  --pitch-accent: #d97757;
+  --pitch-chip-bg: #e8e6dc;
+  --pitch-letterbox: #141413;
+  --pitch-cta-ink: #faf9f5;
+}
+
+/* === Black and white === */
+.pitch[data-theme="bw"] {
+  --pitch-bg: #ffffff;
+  --pitch-ink: #000000;
+  --pitch-muted: #4a4a4a;
+  --pitch-accent: #000000;
+  --pitch-chip-bg: #f2f2f2;
+  --pitch-letterbox: #000000;
+  --pitch-cta-ink: #ffffff;
+}
+
+.pitch-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--pitch-letterbox);
+}
+
+.pitch-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: 0 0;
+  background: var(--pitch-bg);
+  color: var(--pitch-ink);
+  padding: 88px 112px 72px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: inset 8px 0 0 var(--pitch-accent);
+  cursor: pointer;
+}
+
+.pitch-kicker {
+  margin: 0;
+  font-family: var(--pitch-sans);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pitch-accent);
+}
+
+.pitch-kicker::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: 18px;
+  background: var(--pitch-accent);
+}
+
+.pitch-title {
+  margin: 28px 0 36px;
+  font-family: var(--pitch-sans);
+  font-size: 108px;
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  max-width: 1600px;
+}
+
+.pitch-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1320px;
+}
+
+.pitch-lines li {
+  font-family: var(--pitch-serif);
+  font-size: 36px;
+  line-height: 1.35;
+  color: var(--pitch-ink);
+}
+
+.pitch-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 1540px;
+}
+
+.pitch-steps li {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.pitch-step-num {
+  font-family: var(--pitch-sans);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--pitch-accent);
+  padding-top: 6px;
+}
+
+.pitch-step-copy {
+  font-family: var(--pitch-serif);
+  font-size: 34px;
+  line-height: 1.35;
+}
+
+.pitch-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+.pitch-chip {
+  border: 1px solid color-mix(in srgb, var(--pitch-ink) 14%, transparent);
+  background: var(--pitch-chip-bg);
+  color: var(--pitch-ink);
+  padding: 10px 16px;
+  font-family: var(--pitch-sans);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.pitch-cta {
+  display: inline-block;
+  margin-top: 48px;
+  width: fit-content;
+  text-decoration: none;
+  background: var(--pitch-accent);
+  color: var(--pitch-cta-ink);
+  font-family: var(--pitch-sans);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 16px 28px;
+}
+
+.pitch-cta:hover {
+  filter: brightness(0.95);
+}
+
+.pitch-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--pitch-sans);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pitch-muted);
+}
+
+.pitch-nav {
+  position: relative;
+  z-index: 2;
+  height: 64px;
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+  background: var(--pitch-letterbox);
+  color: var(--pitch-bg);
+}
+
+.pitch-btn,
+.pitch-theme,
+.pitch-map {
+  font-family: var(--pitch-sans);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pitch-bg);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--pitch-bg) 35%, transparent);
+  padding: 7px 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pitch-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pitch-btn:hover:not(:disabled),
+.pitch-theme:hover,
+.pitch-map:hover {
+  border-color: var(--pitch-bg);
+}
+
+.pitch-theme {
+  margin-left: auto;
+}
+
+.pitch-dots {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pitch-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--pitch-bg) 45%, transparent);
+  background: transparent;
+  border-radius: 99px;
+  cursor: pointer;
+}
+
+.pitch-dot[data-on="true"] {
+  background: var(--pitch-accent);
+  border-color: var(--pitch-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pitch-stage,
+  .pitch-cta {
+    transition: none;
+  }
+}
