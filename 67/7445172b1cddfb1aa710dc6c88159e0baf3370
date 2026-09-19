@@ -1,0 +1,21 @@
+README.md
+  s_2fb72e597b9f00::t_f442a5141e975d 222
+  s_2fb72e597b9f00::t_67c595576db972 26-40,43
+  s_2fb72e597b9f00::t_e1a2a2eb8c0f2f 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "677445172b1cddfb1aa710dc6c88159e0baf3370",
+  "prompts": {},
+  "sessions": {
+    "s_2fb72e597b9f00": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e47bc951-db0d-44c0-a88f-08acbc3ef17a",
+        "model": "grok-4.6"
+      },
+      "human_author": "Logan May (Work) <loganwork@Logans-MacBook-Pro.local>"
+    }
+  }
+}
