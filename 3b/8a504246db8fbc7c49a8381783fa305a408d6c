@@ -1,0 +1,45 @@
+README.md
+  s_2fb72e597b9f00::t_18d2efcb4f0fc9 1-43
+AGENTS.md
+  s_2fb72e597b9f00::t_39a691e4cec63d 1-9
+CLAUDE.md
+  s_2fb72e597b9f00::t_ad291a58eb6311 1
+eslint.config.mjs
+  s_2fb72e597b9f00::t_5b60467a2856ae 1-18
+package-lock.json
+  s_2fb72e597b9f00::t_c8eae72798e77b 1-8970
+package.json
+  s_2fb72e597b9f00::t_c9eeff317458cd 1-31
+postcss.config.mjs
+  s_2fb72e597b9f00::t_5e83cc13647607 1-7
+public/file.svg
+  s_2fb72e597b9f00::t_b034a2a2ae8d95 1
+public/globe.svg
+  s_2fb72e597b9f00::t_16c18fda9c702c 1
+public/next.svg
+  s_2fb72e597b9f00::t_137054b50659cc 1
+public/vercel.svg
+  s_2fb72e597b9f00::t_e561885f1c2526 1
+public/window.svg
+  s_2fb72e597b9f00::t_60a5fc7aa2fa97 1
+src/components/OrgWorkbench.tsx
+  s_2fb72e597b9f00::t_6b510e12faf208 1-613
+tsconfig.json
+  s_2fb72e597b9f00::t_81e4ac642f09d5 1-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3b8a504246db8fbc7c49a8381783fa305a408d6c",
+  "prompts": {},
+  "sessions": {
+    "s_2fb72e597b9f00": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e47bc951-db0d-44c0-a88f-08acbc3ef17a",
+        "model": "grok-4.6"
+      },
+      "human_author": "Logan May (Work) <loganwork@Logans-MacBook-Pro.local>"
+    }
+  }
+}
