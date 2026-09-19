@@ -1,0 +1,46 @@
+README.md
+  s_2fb72e597b9f00::t_dc6d7a12931ace 60
+  s_2fb72e597b9f00::t_3d358e1ea5c5f6 269
+  s_2fb72e597b9f00::t_8cccd332e0032a 83
+src/lib/layout-graph.ts
+  s_2fb72e597b9f00::t_7b7a019f96a1cb 4,6-14,18-26,29-42,48-52,55-56,58-59,64,66-85,87,90-99,102-116,119-155
+src/components/OrgWorkbench.tsx
+  s_2fb72e597b9f00::t_fce27506654d17 155-172
+  s_2fb72e597b9f00::t_c4c4bb62bd88f1 44
+  s_2fb72e597b9f00::t_10d0f7811636c2 4,15,27,29
+  s_2fb72e597b9f00::t_d2c081be875438 204-210,213
+src/app/globals.css
+  s_2fb72e597b9f00::t_954de69b5a62df 4-11,13,62-65,70,82-83,85,89,96,110-130,145,147,165,172-173,176-185,188-213,215-244,246,249-254,262,283,301-303,309,318,334,346-348,417,430,455,472,498,503,507,511,513,521-524,529-530,550
+src/lib/status-style.ts
+  s_2fb72e597b9f00::t_467c9b147de273 14-16
+ARCHITECTURE.md
+  s_2fb72e597b9f00::t_4cfa4fcbe64e1a 107
+  s_2fb72e597b9f00::t_c5dde2272b0045 15
+  s_2fb72e597b9f00::t_7df56be7869450 84-85
+  s_2fb72e597b9f00::t_875c07809aa5b7 68
+src/components/ShareHome.tsx
+  s_2fb72e597b9f00::t_de7e59998f5380 37,40-41
+  s_2fb72e597b9f00::t_7b1de0a48660d7 32
+src/components/OrgCanvas.tsx
+  s_2fb72e597b9f00::t_bd77f09509ba9a 3-9,11-24,27-75
+src/app/layout.tsx
+  s_2fb72e597b9f00::t_f0d703b7516d4e 2,16-17,24
+package-lock.json
+  s_2fb72e597b9f00::t_fe701542a19b0d 2164,2174,3549
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fcf6403975ca7176070a86cfaa377e1443619f86",
+  "prompts": {},
+  "sessions": {
+    "s_2fb72e597b9f00": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e47bc951-db0d-44c0-a88f-08acbc3ef17a",
+        "model": "grok-4.6"
+      },
+      "human_author": "Logan May (Work) <loganwork@Logans-MacBook-Pro.local>"
+    }
+  }
+}
