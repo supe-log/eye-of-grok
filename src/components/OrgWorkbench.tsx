@@ -26,6 +26,7 @@ import {
   type OrgSnapshot,
 } from "@/lib/types";
 import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, relativeTime } from "@/lib/status-style";
+import { Logo } from "./Logo";
 import { MermaidView } from "./MermaidView";
 import { OrgCanvas } from "./OrgCanvas";
 
@@ -127,11 +128,9 @@ export function OrgWorkbench({
     <main className="shell">
       <header className="topbar">
         <div className="brand">
-          <Link className="brand-mark" href="/" style={{ color: "inherit", textDecoration: "none" }}>
-            Eye of Grok
-          </Link>
+          <Logo href="/" />
           <span className="brand-sub">
-            {snapshot.orgId} · shareable{livePulse ? " · incoming" : " · live"}
+            {snapshot.orgId} · shareable · {livePulse ? "incoming" : "live"}
           </span>
         </div>
         <div className="gauges">
@@ -668,7 +667,7 @@ function LivePanel({
         <input value={token} onChange={(event) => onToken(event.target.value)} />
       </label>
       <p className="muted">
-        <Link href="/">Claim a different slug</Link>
+        <Link href="/claim">Claim a different slug</Link>
       </p>
       {revisions.length > 0 && (
         <>

@@ -9,11 +9,11 @@ export const STATUS_LABEL: Record<NodeStatus, string> = {
 };
 
 export const STATUS_COLOR: Record<NodeStatus, string> = {
-  active: "#7d9b73",
-  stale: "#c4a15a",
-  hidden: "#8b8b8b",
-  deprecated: "#d27c73",
-  duplicate: "#82aaff",
+  active: "#3fb950",
+  stale: "#d29922",
+  hidden: "#8a8f98",
+  deprecated: "#e15656",
+  duplicate: "#a371f7",
 };
 
 export const KIND_LABEL: Record<NodeKind, string> = {
