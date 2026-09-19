@@ -23,29 +23,24 @@ Grok Bot scales like a company:
 Eye of Grok is the map you wish the sidebar was: a readout + recommendation surface the Chief of Staff writes to — not a second control plane.
 
 ```mermaid
-flowchart LR
-  subgraph grokBot [Grok Bot account]
-    CoS[Chief of Staff]
-    Specialists[Specialist Bots]
-    Groups[Group spaces]
-    CoS --> Specialists
-    Specialists --> Groups
-  end
-  subgraph platform [Eye of Grok]
-    API[Ingest API]
-    Store[Org snapshot]
-    Map[Interactive map]
-    Grok[Grok 4.6 analyze]
-    Mermaid[Mermaid export]
-    API --> Store
-    Store --> Map
-    Store --> Grok
-    Grok --> Map
-    Store --> Mermaid
-  end
-  CoS -->|"POST snapshot or MCP"| API
-  Human[Human] --> Map
+flowchart TD
+  Human[Human] -->|"types a name, copies one prompt"| Home["eye-of-grok.vercel.app"]
+  Home -->|"opens /u/slug"| Map["Canvas map<br/>reporting line or spaces"]
+  Human -->|"pastes prompt"| CoS[Chief of Staff in Grok Bot]
+  CoS -->|"POST /api/orgs/slug/snapshot<br/>Bearer INGEST_TOKEN"| API[Next.js ingest]
+  Human -->|"Edit in the browser"| API
+  Laptop[Casey on this Mac] -->|"POST /api/local/snapshot<br/>loopback only"| API
+  CloudCoS[Phone or cloud Bot] -->|"POST snapshot or MCP /api/mcp"| API
+  API -->|"upsert latest + append revision"| Neon[(Neon Postgres<br/>eye-of-grok)]
+  Neon -->|"GET /api/orgs/slug every 2.5s"| Map
+  Neon --> Export["Mermaid tab / GET .../mermaid"]
+  Neon --> History["Live tab: saved snapshots"]
+  Human --> Map
+  Human --> Export
+  Human --> History
 ```
+
+How it works today: a person claims a slug, the Chief of Staff pushes a JSON roster, Neon keeps the latest map plus a revision on every save, and the public page draws a canvas-style DAG (Mermaid is an export, not the source of truth). Analyze / Grok 4.6 is parked and is not on this path.
 
 ---
 
@@ -224,7 +219,7 @@ type OrgSnapshot = {
 | `handoff` | Async bot-to-bot work |
 | `shares_context` | Overlapping knowledge, not membership |
 
-Snapshots live under `data/orgs/` (gitignored).
+Latest map and revisions live in Neon (`org_snapshots`). Without `DATABASE_URL`, local fallback is `data/orgs/` (gitignored).
 
 ---
 
