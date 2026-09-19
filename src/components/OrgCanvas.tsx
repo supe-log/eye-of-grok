@@ -1,12 +1,26 @@
 "use client";
 
-import { useMemo } from "react";
 import {
-  layoutOrgCanvas,
-  type OrgCanvasView,
-} from "@/lib/layout-graph";
-import { KIND_LABEL, STATUS_LABEL, isProblemStatus } from "@/lib/status-style";
+  Background,
+  Controls,
+  MiniMap,
+  ReactFlow,
+  ReactFlowProvider,
+} from "@xyflow/react";
+import { useMemo } from "react";
+import { snapshotToFlow, type OrgMapView } from "@/lib/layout-graph";
+import { STATUS_COLOR, isProblemStatus } from "@/lib/status-style";
 import type { OrgSnapshot } from "@/lib/types";
+import { OrgNode, type OrgFlowNode } from "./OrgNode";
+
+const nodeTypes = { org: OrgNode };
+
+const EDGE_LEGEND = [
+  { kind: "reports_to", label: "Reports" },
+  { kind: "member_of", label: "Member of" },
+  { kind: "handoff", label: "Handoff" },
+  { kind: "shares_context", label: "Shares context" },
+] as const;
 
 export function OrgCanvas({
   snapshot,
@@ -16,64 +30,93 @@ export function OrgCanvas({
   onSelect,
 }: {
   snapshot: OrgSnapshot;
-  view: OrgCanvasView;
+  view: OrgMapView;
   hygiene: boolean;
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const laid = useMemo(() => layoutOrgCanvas(snapshot, view), [snapshot, view]);
+  return (
+    <ReactFlowProvider>
+      <OrgCanvasInner
+        snapshot={snapshot}
+        view={view}
+        hygiene={hygiene}
+        selectedId={selectedId}
+        onSelect={onSelect}
+      />
+    </ReactFlowProvider>
+  );
+}
+
+function OrgCanvasInner({
+  snapshot,
+  view,
+  hygiene,
+  selectedId,
+  onSelect,
+}: {
+  snapshot: OrgSnapshot;
+  view: OrgMapView;
+  hygiene: boolean;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const flow = useMemo(() => {
+    const laid = snapshotToFlow(snapshot, view);
+    return {
+      nodes: laid.nodes.map((node) => {
+        const flagged = isProblemStatus(node.data.orgNode.status);
+        return {
+          ...node,
+          selected: selectedId === node.id,
+          data: {
+            ...node.data,
+            dimmed: hygiene && !flagged,
+            recommended: hygiene && flagged,
+          },
+        };
+      }),
+      edges: laid.edges,
+    };
+  }, [snapshot, view, hygiene, selectedId]);
 
   return (
-    <div className="dag-stage">
-      <div
-        className="dag-board"
-        style={{ width: laid.width, height: laid.height }}
+    <div className="org-flow">
+      <ReactFlow
+        key={`${snapshot.orgId}-${view}`}
+        nodes={flow.nodes}
+        edges={flow.edges}
+        nodeTypes={nodeTypes}
+        fitView
+        fitViewOptions={{ padding: 0.22 }}
+        minZoom={0.35}
+        maxZoom={1.6}
+        onNodeClick={(_event, node) => onSelect(node.id)}
+        nodesConnectable={false}
+        edgesFocusable={false}
       >
-        <svg
-          className="dag-edges"
-          width={laid.width}
-          height={laid.height}
-          aria-hidden
-        >
-          {laid.edges.map((edge) => (
-            <line
-              key={edge.id}
-              x1={edge.sourceX}
-              y1={edge.sourceY}
-              x2={edge.targetX}
-              y2={edge.targetY}
-              className={`dag-edge dag-edge-${edge.kind}`}
-            />
-          ))}
-        </svg>
-        {laid.nodes.map((node) => {
-          const flagged = isProblemStatus(node.orgNode.status);
-          return (
-            <button
-              key={node.id}
-              type="button"
-              className={`dag-node dag-node-${node.orgNode.kind}`}
-              data-selected={selectedId === node.id}
-              data-dimmed={hygiene && !flagged}
-              data-flagged={hygiene && flagged}
-              style={{
-                left: node.x,
-                top: node.y,
-                width: node.width,
-                height: node.height,
-              }}
-              onClick={() => onSelect(node.id)}
-            >
-              <span className="dag-node-name">{node.orgNode.name}</span>
-              <span className="dag-node-meta">
-                {hygiene && flagged
-                  ? STATUS_LABEL[node.orgNode.status]
-                  : (node.orgNode.title ?? KIND_LABEL[node.orgNode.kind])}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+        <Background gap={22} color="#2a2c30" />
+        <MiniMap
+          pannable
+          zoomable
+          maskColor="rgba(5, 5, 5, 0.72)"
+          nodeColor={(node: OrgFlowNode) =>
+            STATUS_COLOR[node.data.orgNode.status]
+          }
+        />
+        <Controls showInteractive={false} />
+      </ReactFlow>
+      <ul className="edge-legend" aria-label="Connection kinds">
+        {EDGE_LEGEND.map((item) => (
+          <li
+            key={item.kind}
+            className={`edge-legend-item edge-legend-${item.kind}`}
+          >
+            <i aria-hidden />
+            {item.label}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

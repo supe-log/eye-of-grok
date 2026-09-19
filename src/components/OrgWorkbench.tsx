@@ -12,7 +12,7 @@ import {
   snapshotPostUrl,
 } from "@/lib/casey-prompt";
 import { addLink, addNode, removeNode, setNodeStatus } from "@/lib/graph-edit";
-import type { OrgCanvasView } from "@/lib/layout-graph";
+import type { OrgMapView } from "@/lib/layout-graph";
 import { snapshotToMermaid } from "@/lib/mermaid";
 import { snapshotCapacity } from "@/lib/capacity";
 import {
@@ -43,7 +43,7 @@ export function OrgWorkbench({
     initialSnapshot.nodes[0]?.id ?? null,
   );
   const [hygiene, setHygiene] = useState(false);
-  const [view, setView] = useState<OrgCanvasView>("reports");
+  const [view, setView] = useState<OrgMapView>("all");
   const [tab, setTab] = useState<Tab>("live");
   const [ingestToken, setIngestToken] = useState("hackathon-demo");
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
@@ -153,6 +153,14 @@ export function OrgWorkbench({
         </div>
         <div className="top-actions">
           <div className="view-pills">
+            <button
+              type="button"
+              className="pill"
+              data-on={view === "all"}
+              onClick={() => setView("all")}
+            >
+              All links
+            </button>
             <button
               type="button"
               className="pill"
