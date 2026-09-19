@@ -1,7 +1,7 @@
 import { Graph, layout } from "@dagrejs/dagre";
-import type { Edge, Node } from "@xyflow/react";
+import { Position, type Edge, type Node } from "@xyflow/react";
 import type { CSSProperties } from "react";
-import type { OrgEdge, OrgNode, OrgSnapshot } from "./types";
+import { GROUP_MEMBER_LIMIT, type OrgEdge, type OrgNode, type OrgSnapshot } from "./types";
 
 export const BOT_NODE_W = 196;
 export const BOT_NODE_H = 76;
@@ -27,9 +27,14 @@ function nodeSize(kind: OrgNode["kind"]): { width: number; height: number } {
   return { width: BOT_NODE_W, height: BOT_NODE_H };
 }
 
+export type FlowLayoutOptions = {
+  maxColumnHeight?: number;
+};
+
 export function snapshotToFlow(
   snapshot: OrgSnapshot,
   view: OrgMapView = "all",
+  options: FlowLayoutOptions = {},
 ): {
   nodes: Node<OrgFlowNodeData>[];
   edges: Edge<OrgFlowEdgeData>[];
@@ -40,12 +45,13 @@ export function snapshotToFlow(
   const g = new Graph();
   g.setDefaultEdgeLabel(() => ({}));
   g.setGraph({
-    rankdir: "TB",
-    nodesep: 36,
-    ranksep: 78,
-    edgesep: 18,
-    marginx: 24,
-    marginy: 24,
+    rankdir: "LR",
+    ranker: "tight-tree",
+    nodesep: 22,
+    ranksep: 52,
+    edgesep: 10,
+    marginx: 16,
+    marginy: 16,
   });
 
   for (const node of nodesInView) {
@@ -66,20 +72,30 @@ export function snapshotToFlow(
 
   layout(g);
 
-  const nodes: Node<OrgFlowNodeData>[] = nodesInView.map((orgNode) => {
-    const placed = g.node(orgNode.id);
+  const placed = nodesInView.map((orgNode) => {
     const size = nodeSize(orgNode.kind);
+    const raw = g.node(orgNode.id);
     return {
       id: orgNode.id,
-      type: "org",
-      position: {
-        x: (placed?.x ?? 0) - size.width / 2,
-        y: (placed?.y ?? 0) - size.height / 2,
-      },
-      data: { orgNode },
-      style: { width: size.width, height: size.height },
+      orgNode,
+      width: size.width,
+      height: size.height,
+      x: (raw?.x ?? 0) - size.width / 2,
+      y: (raw?.y ?? 0) - size.height / 2,
     };
   });
+
+  const packed = wrapRanksLeftToRight(placed, options.maxColumnHeight ?? 640);
+
+  const nodes: Node<OrgFlowNodeData>[] = packed.map((node) => ({
+    id: node.id,
+    type: "org",
+    position: { x: node.x, y: node.y },
+    data: { orgNode: node.orgNode },
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
+    style: { width: node.width, height: node.height },
+  }));
 
   const edges: Edge<OrgFlowEdgeData>[] = snapshot.edges.flatMap((orgEdge) => {
     if (!included.has(orgEdge.from) || !included.has(orgEdge.to)) return [];
@@ -98,6 +114,64 @@ export function snapshotToFlow(
   });
 
   return { nodes, edges };
+}
+
+type PlacedNode = {
+  id: string;
+  orgNode: OrgNode;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+};
+
+function wrapRanksLeftToRight(placed: PlacedNode[], maxColumnHeight: number): PlacedNode[] {
+  const rowGap = 14;
+  const colGap = 44;
+  const ranks = new Map<number, PlacedNode[]>();
+
+  for (const node of placed) {
+    const key = Math.round(node.x / 24) * 24;
+    const bucket = ranks.get(key) ?? [];
+    bucket.push(node);
+    ranks.set(key, bucket);
+  }
+
+  const ordered = [...ranks.keys()].sort((a, b) => a - b);
+  const next: PlacedNode[] = [];
+  let xCursor = 16;
+
+  for (const key of ordered) {
+    const items = (ranks.get(key) ?? []).sort((a, b) => a.y - b.y || a.id.localeCompare(b.id));
+    const colWidth = Math.max(...items.map((item) => item.width), BOT_NODE_W);
+    const columns: PlacedNode[][] = [[]];
+    const heights = [0];
+
+    for (const item of items) {
+      const col = columns.length - 1;
+      const nextHeight = heights[col] === 0 ? item.height : heights[col] + rowGap + item.height;
+      if (columns[col].length > 0 && nextHeight > maxColumnHeight) {
+        columns.push([]);
+        heights.push(0);
+      }
+      const dest = columns.length - 1;
+      columns[dest].push(item);
+      heights[dest] = heights[dest] === 0 ? item.height : heights[dest] + rowGap + item.height;
+    }
+
+    columns.forEach((column, index) => {
+      let y = 16;
+      const x = xCursor + index * (colWidth + colGap);
+      for (const item of column) {
+        next.push({ ...item, x, y });
+        y += item.height + rowGap;
+      }
+    });
+
+    xCursor += columns.length * (colWidth + colGap);
+  }
+
+  return next;
 }
 
 function visibleIds(snapshot: OrgSnapshot, view: OrgMapView): Set<string> {
@@ -124,6 +198,33 @@ function visibleIds(snapshot: OrgSnapshot, view: OrgMapView): Set<string> {
     }
   }
   return ids;
+}
+
+export type SpaceCluster = {
+  group: OrgNode;
+  members: OrgNode[];
+};
+
+export function spaceClusters(snapshot: OrgSnapshot): SpaceCluster[] {
+  const byId = new Map(snapshot.nodes.map((node) => [node.id, node]));
+  return snapshot.nodes
+    .filter((node) => node.kind === "group")
+    .map((group) => {
+      const members = snapshot.edges
+        .filter((edge) => edge.kind === "member_of" && edge.to === group.id)
+        .map((edge) => byId.get(edge.from))
+        .filter((node): node is OrgNode => Boolean(node));
+      return { group, members };
+    })
+    .sort((a, b) => {
+      const overA = a.members.length > GROUP_MEMBER_LIMIT ? 0 : 1;
+      const overB = b.members.length > GROUP_MEMBER_LIMIT ? 0 : 1;
+      if (overA !== overB) return overA - overB;
+      const staleA = a.group.status === "active" ? 1 : 0;
+      const staleB = b.group.status === "active" ? 1 : 0;
+      if (staleA !== staleB) return staleA - staleB;
+      return a.group.name.localeCompare(b.group.name);
+    });
 }
 
 export function connectedNeighbors(

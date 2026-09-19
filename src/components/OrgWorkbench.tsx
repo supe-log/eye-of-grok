@@ -29,6 +29,7 @@ import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, relativeTime } from "@/lib/stat
 import { Logo } from "./Logo";
 import { MermaidView } from "./MermaidView";
 import { OrgCanvas } from "./OrgCanvas";
+import { ThemeToggle } from "./ThemeToggle";
 
 type Tab = "inspect" | "edit" | "mermaid" | "live";
 
@@ -149,6 +150,7 @@ export function OrgWorkbench({
           <Gauge label="Updated" value={relativeTime(snapshot.pushedAt)} />
         </div>
         <div className="top-actions">
+          <ThemeToggle />
           <div className="view-pills">
             <button
               type="button"
@@ -219,7 +221,7 @@ export function OrgWorkbench({
       )}
 
       <section className="stage">
-        <div className="canvas">
+        <div className="canvas" data-view={view}>
           <OrgCanvas
             snapshot={snapshot}
             view={view}

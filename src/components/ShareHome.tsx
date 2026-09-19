@@ -6,6 +6,7 @@ import { getIngestToken } from "@/lib/auth";
 import { normalizeOrgId } from "@/lib/org-id";
 import { createBotSharePrompt, createBotSpeakLine } from "@/lib/share-prompt";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function ShareHome() {
   const [name, setName] = useState("");
@@ -29,8 +30,11 @@ export function ShareHome() {
   return (
     <main className="share-shell">
       <header className="share-brand">
-        <Logo href="/" />
-        <span className="brand-sub">Canvas map · one paste into Chief of Staff</span>
+        <div>
+          <Logo href="/" />
+          <span className="brand-sub">Canvas map · one paste into Chief of Staff</span>
+        </div>
+        <ThemeToggle />
       </header>
 
       <section className="share-card">
