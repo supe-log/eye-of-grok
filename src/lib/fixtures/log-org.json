@@ -1,0 +1,958 @@
+{
+  "orgId": "log",
+  "pushedAt": "2026-09-08T11:04:00.000Z",
+  "source": "fixture",
+  "notes": "Fictional roster shaped like a dense Grok Bot fleet. Names, rooms, and timestamps are invented. Same graph size as a real 40-bot map for layout tests.",
+  "tools": [
+    "ForgeRepo",
+    "Relay",
+    "Inbox",
+    "Daybook",
+    "Locker",
+    "Noteboard",
+    "Funnel",
+    "Watchtower",
+    "Pulse",
+    "Lakehouse",
+    "Launchpad",
+    "Oats",
+    "Listen",
+    "Slots",
+    "Billboard",
+    "CloudSmith",
+    "PatchRunner",
+    "Till (needsAuth)",
+    "DocsIndex (needsAuth)",
+    "Broadcast (needsAuth)"
+  ],
+  "nodes": [
+    {
+      "id": "human-mira-vale",
+      "kind": "human",
+      "name": "Mira Vale",
+      "title": "You",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T11:04:00.000Z",
+      "notes": "Account owner. Judgment only \u2014 Wren is the work door."
+    },
+    {
+      "id": "bot-wren",
+      "kind": "bot",
+      "name": "Wren",
+      "title": "Chief of Staff",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T10:18:00.000Z",
+      "notes": "Pinned inbox. Routes specialists and opens outcome rooms."
+    },
+    {
+      "id": "bot-forge",
+      "kind": "bot",
+      "name": "Forge",
+      "title": "Creates fleet bots",
+      "status": "active",
+      "lastActiveAt": "2026-09-07T19:05:00.000Z",
+      "notes": "Spins up new specialists after Wren writes a brief."
+    },
+    {
+      "id": "bot-quill",
+      "kind": "bot",
+      "name": "Quill",
+      "title": "Fleet auditor",
+      "status": "active",
+      "lastActiveAt": "2026-09-06T11:18:00.000Z",
+      "notes": "Drafts cut/keep proposals. Mira decides."
+    },
+    {
+      "id": "bot-kiln",
+      "kind": "bot",
+      "name": "Kiln",
+      "title": "Self-improve lab",
+      "status": "active",
+      "lastActiveAt": "2026-09-05T16:44:00.000Z",
+      "notes": "Sandbox harvest and eval. Does not mutate live bots."
+    },
+    {
+      "id": "bot-quill-echo",
+      "kind": "bot",
+      "name": "Quill Echo",
+      "title": "Fleet auditor",
+      "status": "duplicate",
+      "lastActiveAt": "2026-07-12T09:10:00.000Z",
+      "notes": "Overlaps Quill. Sitting in Loose. Cut candidate."
+    },
+    {
+      "id": "bot-metron",
+      "kind": "bot",
+      "name": "Metron",
+      "title": "Ops / playbook",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T08:12:00.000Z",
+      "notes": "Pinned. Weekday specialist check-ins roll into a Wren digest."
+    },
+    {
+      "id": "bot-parcel",
+      "kind": "bot",
+      "name": "Parcel",
+      "title": "PR and shipping",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T10:03:00.000Z",
+      "notes": "Coding lane in Mill. Hands repos to a cloud agent."
+    },
+    {
+      "id": "bot-ledger",
+      "kind": "bot",
+      "name": "Ledger",
+      "title": "CRM / intake board",
+      "status": "active",
+      "lastActiveAt": "2026-09-07T15:27:00.000Z",
+      "notes": "Pipeline board and contact hygiene."
+    },
+    {
+      "id": "bot-scribe",
+      "kind": "bot",
+      "name": "Scribe",
+      "title": "Course writing",
+      "status": "active",
+      "lastActiveAt": "2026-09-04T21:50:00.000Z",
+      "notes": "Drafts lessons for the writing app."
+    },
+    {
+      "id": "bot-token",
+      "kind": "bot",
+      "name": "Token",
+      "title": "Admissions credits / SIS",
+      "status": "stale",
+      "lastActiveAt": "2026-06-14T17:22:00.000Z",
+      "notes": "Credit issuance against the student record."
+    },
+    {
+      "id": "bot-vault",
+      "kind": "bot",
+      "name": "Vault",
+      "title": "Row-level security",
+      "status": "stale",
+      "lastActiveAt": "2026-06-12T13:08:00.000Z",
+      "notes": "Policy review for the shared database."
+    },
+    {
+      "id": "bot-flare",
+      "kind": "bot",
+      "name": "Flare",
+      "title": "Production incidents",
+      "status": "stale",
+      "lastActiveAt": "2026-06-18T06:41:00.000Z",
+      "notes": "Triage and repro, then hand off to Parcel."
+    },
+    {
+      "id": "bot-hearth",
+      "kind": "bot",
+      "name": "Hearth",
+      "title": "Meetings \u2192 actions",
+      "status": "stale",
+      "lastActiveAt": "2026-06-20T22:15:00.000Z",
+      "notes": "Turns call notes into draft actions."
+    },
+    {
+      "id": "bot-scout",
+      "kind": "bot",
+      "name": "Scout",
+      "title": "Hiring logistics",
+      "status": "active",
+      "lastActiveAt": "2026-09-03T12:33:00.000Z",
+      "notes": "Pipelines and role drafts only."
+    },
+    {
+      "id": "bot-signal",
+      "kind": "bot",
+      "name": "Signal",
+      "title": "Public account coach",
+      "status": "active",
+      "lastActiveAt": "2026-09-02T18:09:00.000Z",
+      "notes": "Drafts only; never publish without Mira."
+    },
+    {
+      "id": "bot-lens",
+      "kind": "bot",
+      "name": "Lens",
+      "title": "Photo account coach",
+      "status": "active",
+      "lastActiveAt": "2026-09-01T09:55:00.000Z",
+      "notes": "Metrics plus drafts in the lens room."
+    },
+    {
+      "id": "bot-drift",
+      "kind": "bot",
+      "name": "Drift",
+      "title": "Fleet evolution",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T11:47:00.000Z",
+      "notes": "Harvest, twin, yes-no. Friday QA."
+    },
+    {
+      "id": "bot-scoutling",
+      "kind": "bot",
+      "name": "Scoutling",
+      "title": "Arena scout",
+      "status": "active",
+      "lastActiveAt": "2026-09-01T20:00:00.000Z",
+      "notes": "Weekend event. On-demand."
+    },
+    {
+      "id": "bot-measure",
+      "kind": "bot",
+      "name": "Measure",
+      "title": "Arena evaluator",
+      "status": "active",
+      "lastActiveAt": "2026-09-01T20:12:00.000Z",
+      "notes": "Weekend event. On-demand."
+    },
+    {
+      "id": "bot-folio",
+      "kind": "bot",
+      "name": "Folio",
+      "title": "Arena packet writer",
+      "status": "active",
+      "lastActiveAt": "2026-09-01T20:24:00.000Z",
+      "notes": "Weekend event. On-demand."
+    },
+    {
+      "id": "bot-gavel",
+      "kind": "bot",
+      "name": "Gavel",
+      "title": "Arena judge",
+      "status": "active",
+      "lastActiveAt": "2026-09-01T20:36:00.000Z",
+      "notes": "Weekend event. On-demand."
+    },
+    {
+      "id": "bot-husk",
+      "kind": "bot",
+      "name": "Husk",
+      "title": "Empty shell",
+      "status": "deprecated",
+      "lastActiveAt": "2026-02-03T10:00:00.000Z",
+      "notes": "Empty profile. Cut candidate."
+    },
+    {
+      "id": "sec-atlas",
+      "kind": "group",
+      "name": "Atlas",
+      "title": "Sidebar section",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T12:00:00.000Z"
+    },
+    {
+      "id": "sec-rig",
+      "kind": "group",
+      "name": "Rig",
+      "title": "Sidebar section",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T12:00:00.000Z"
+    },
+    {
+      "id": "sec-mill",
+      "kind": "group",
+      "name": "Mill",
+      "title": "Sidebar section",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T12:00:00.000Z"
+    },
+    {
+      "id": "sec-desk",
+      "kind": "group",
+      "name": "Desk",
+      "title": "Sidebar section",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T12:00:00.000Z"
+    },
+    {
+      "id": "sec-press",
+      "kind": "group",
+      "name": "Press",
+      "title": "Sidebar section",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T12:00:00.000Z"
+    },
+    {
+      "id": "sec-studio",
+      "kind": "group",
+      "name": "Studio",
+      "title": "Sidebar section",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T12:00:00.000Z"
+    },
+    {
+      "id": "sec-loose",
+      "kind": "group",
+      "name": "Loose",
+      "title": "Sidebar section",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T12:00:00.000Z"
+    },
+    {
+      "id": "grp-lens-room",
+      "kind": "group",
+      "name": "lens-room",
+      "title": "Group room",
+      "status": "active",
+      "lastActiveAt": "2026-09-01T09:55:00.000Z",
+      "notes": "Lens + Wren."
+    },
+    {
+      "id": "grp-drift-pit",
+      "kind": "group",
+      "name": "drift-pit",
+      "title": "Group room",
+      "status": "active",
+      "lastActiveAt": "2026-09-01T20:36:00.000Z",
+      "notes": "Scoutling, Measure, Folio, Gavel, Wren."
+    },
+    {
+      "id": "grp-drift-lab",
+      "kind": "group",
+      "name": "drift-lab",
+      "title": "Group room",
+      "status": "active",
+      "lastActiveAt": "2026-09-08T11:47:00.000Z",
+      "notes": "Drift + Kiln + Wren."
+    },
+    {
+      "id": "grp-kiln-circle",
+      "kind": "group",
+      "name": "kiln-circle",
+      "title": "Group room",
+      "status": "active",
+      "lastActiveAt": "2026-09-07T19:05:00.000Z",
+      "notes": "Kiln + Quill + Forge + Metron + Wren."
+    },
+    {
+      "id": "grp-ledger-cut",
+      "kind": "group",
+      "name": "ledger-cut",
+      "title": "Group room",
+      "status": "stale",
+      "lastActiveAt": "2026-06-09T16:00:00.000Z",
+      "notes": "Ledger + Parcel + Wren."
+    },
+    {
+      "id": "grp-vault-row",
+      "kind": "group",
+      "name": "vault-row",
+      "title": "Group room",
+      "status": "stale",
+      "lastActiveAt": "2026-06-12T13:08:00.000Z",
+      "notes": "Vault + Wren."
+    },
+    {
+      "id": "grp-scribe-hall",
+      "kind": "group",
+      "name": "scribe-hall",
+      "title": "Group room",
+      "status": "stale",
+      "lastActiveAt": "2026-06-11T08:30:00.000Z",
+      "notes": "Scribe + Parcel + Wren."
+    },
+    {
+      "id": "grp-token-desk",
+      "kind": "group",
+      "name": "token-desk",
+      "title": "Group room",
+      "status": "stale",
+      "lastActiveAt": "2026-06-14T17:22:00.000Z",
+      "notes": "Token + Parcel + Wren."
+    },
+    {
+      "id": "grp-signal-room",
+      "kind": "group",
+      "name": "signal-room",
+      "title": "Group room",
+      "status": "stale",
+      "lastActiveAt": "2026-06-08T19:40:00.000Z",
+      "notes": "Signal + Wren."
+    },
+    {
+      "id": "grp-hearth-notes",
+      "kind": "group",
+      "name": "hearth-notes",
+      "title": "Group room",
+      "status": "stale",
+      "lastActiveAt": "2026-06-20T22:15:00.000Z",
+      "notes": "Hearth + Wren."
+    },
+    {
+      "id": "grp-flare-desk",
+      "kind": "group",
+      "name": "flare-desk",
+      "title": "Group room",
+      "status": "stale",
+      "lastActiveAt": "2026-06-18T06:41:00.000Z",
+      "notes": "Flare + Wren."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-r-0",
+      "from": "bot-wren",
+      "to": "human-mira-vale",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-1",
+      "from": "bot-forge",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-2",
+      "from": "bot-quill",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-3",
+      "from": "bot-kiln",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-4",
+      "from": "bot-quill-echo",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-5",
+      "from": "bot-metron",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-6",
+      "from": "bot-parcel",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-7",
+      "from": "bot-ledger",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-8",
+      "from": "bot-scribe",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-9",
+      "from": "bot-token",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-10",
+      "from": "bot-vault",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-11",
+      "from": "bot-flare",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-12",
+      "from": "bot-hearth",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-13",
+      "from": "bot-scout",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-14",
+      "from": "bot-signal",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-15",
+      "from": "bot-lens",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-16",
+      "from": "bot-drift",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-17",
+      "from": "bot-scoutling",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-18",
+      "from": "bot-measure",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-19",
+      "from": "bot-folio",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-20",
+      "from": "bot-gavel",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-r-21",
+      "from": "bot-husk",
+      "to": "bot-wren",
+      "kind": "reports_to"
+    },
+    {
+      "id": "e-m-22",
+      "from": "bot-wren",
+      "to": "sec-atlas",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-23",
+      "from": "bot-token",
+      "to": "sec-atlas",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-24",
+      "from": "bot-ledger",
+      "to": "sec-atlas",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-25",
+      "from": "bot-forge",
+      "to": "sec-rig",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-26",
+      "from": "bot-quill",
+      "to": "sec-rig",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-27",
+      "from": "bot-kiln",
+      "to": "sec-rig",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-28",
+      "from": "bot-parcel",
+      "to": "sec-mill",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-29",
+      "from": "bot-vault",
+      "to": "sec-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-30",
+      "from": "bot-hearth",
+      "to": "sec-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-31",
+      "from": "bot-scout",
+      "to": "sec-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-32",
+      "from": "bot-flare",
+      "to": "sec-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-33",
+      "from": "bot-scribe",
+      "to": "sec-press",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-34",
+      "from": "bot-signal",
+      "to": "sec-studio",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-35",
+      "from": "bot-quill-echo",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-36",
+      "from": "bot-metron",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-37",
+      "from": "bot-lens",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-38",
+      "from": "bot-drift",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-39",
+      "from": "bot-scoutling",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-40",
+      "from": "bot-measure",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-41",
+      "from": "bot-folio",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-42",
+      "from": "bot-gavel",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-43",
+      "from": "bot-husk",
+      "to": "sec-loose",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-44",
+      "from": "bot-lens",
+      "to": "grp-lens-room",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-45",
+      "from": "bot-wren",
+      "to": "grp-lens-room",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-46",
+      "from": "bot-wren",
+      "to": "grp-drift-pit",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-47",
+      "from": "bot-scoutling",
+      "to": "grp-drift-pit",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-48",
+      "from": "bot-measure",
+      "to": "grp-drift-pit",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-49",
+      "from": "bot-folio",
+      "to": "grp-drift-pit",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-50",
+      "from": "bot-gavel",
+      "to": "grp-drift-pit",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-51",
+      "from": "bot-wren",
+      "to": "grp-drift-lab",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-52",
+      "from": "bot-drift",
+      "to": "grp-drift-lab",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-53",
+      "from": "bot-kiln",
+      "to": "grp-drift-lab",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-54",
+      "from": "bot-wren",
+      "to": "grp-kiln-circle",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-55",
+      "from": "bot-kiln",
+      "to": "grp-kiln-circle",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-56",
+      "from": "bot-quill",
+      "to": "grp-kiln-circle",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-57",
+      "from": "bot-forge",
+      "to": "grp-kiln-circle",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-58",
+      "from": "bot-metron",
+      "to": "grp-kiln-circle",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-59",
+      "from": "bot-wren",
+      "to": "grp-ledger-cut",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-60",
+      "from": "bot-ledger",
+      "to": "grp-ledger-cut",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-61",
+      "from": "bot-parcel",
+      "to": "grp-ledger-cut",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-62",
+      "from": "bot-wren",
+      "to": "grp-vault-row",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-63",
+      "from": "bot-vault",
+      "to": "grp-vault-row",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-64",
+      "from": "bot-wren",
+      "to": "grp-scribe-hall",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-65",
+      "from": "bot-scribe",
+      "to": "grp-scribe-hall",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-66",
+      "from": "bot-parcel",
+      "to": "grp-scribe-hall",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-67",
+      "from": "bot-wren",
+      "to": "grp-token-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-68",
+      "from": "bot-token",
+      "to": "grp-token-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-69",
+      "from": "bot-parcel",
+      "to": "grp-token-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-70",
+      "from": "bot-wren",
+      "to": "grp-signal-room",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-71",
+      "from": "bot-signal",
+      "to": "grp-signal-room",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-72",
+      "from": "bot-wren",
+      "to": "grp-hearth-notes",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-73",
+      "from": "bot-hearth",
+      "to": "grp-hearth-notes",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-74",
+      "from": "bot-wren",
+      "to": "grp-flare-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-m-75",
+      "from": "bot-flare",
+      "to": "grp-flare-desk",
+      "kind": "member_of"
+    },
+    {
+      "id": "e-h-76",
+      "from": "bot-flare",
+      "to": "bot-parcel",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-77",
+      "from": "bot-drift",
+      "to": "bot-wren",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-78",
+      "from": "bot-drift",
+      "to": "bot-forge",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-79",
+      "from": "bot-scoutling",
+      "to": "bot-measure",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-80",
+      "from": "bot-measure",
+      "to": "bot-folio",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-81",
+      "from": "bot-folio",
+      "to": "bot-gavel",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-82",
+      "from": "bot-gavel",
+      "to": "bot-wren",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-83",
+      "from": "bot-kiln",
+      "to": "bot-wren",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-84",
+      "from": "bot-quill",
+      "to": "bot-wren",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-h-85",
+      "from": "bot-metron",
+      "to": "bot-wren",
+      "kind": "handoff"
+    },
+    {
+      "id": "e-s-86",
+      "from": "bot-scout",
+      "to": "bot-ledger",
+      "kind": "shares_context"
+    },
+    {
+      "id": "e-s-87",
+      "from": "bot-drift",
+      "to": "bot-kiln",
+      "kind": "shares_context"
+    },
+    {
+      "id": "e-s-88",
+      "from": "bot-quill-echo",
+      "to": "bot-quill",
+      "kind": "shares_context"
+    },
+    {
+      "id": "e-s-89",
+      "from": "bot-lens",
+      "to": "bot-signal",
+      "kind": "shares_context"
+    },
+    {
+      "id": "e-s-90",
+      "from": "bot-parcel",
+      "to": "bot-ledger",
+      "kind": "shares_context"
+    },
+    {
+      "id": "e-s-91",
+      "from": "bot-parcel",
+      "to": "bot-scribe",
+      "kind": "shares_context"
+    },
+    {
+      "id": "e-s-92",
+      "from": "bot-parcel",
+      "to": "bot-token",
+      "kind": "shares_context"
+    },
+    {
+      "id": "e-s-93",
+      "from": "bot-parcel",
+      "to": "bot-vault",
+      "kind": "shares_context"
+    }
+  ]
+}

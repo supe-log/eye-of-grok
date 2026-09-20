@@ -11,16 +11,18 @@ export function OrgNode({ data, selected }: NodeProps<OrgFlowNode>) {
   const accent = STATUS_COLOR[node.status];
   const dimmed = Boolean(data.dimmed);
   const recommended = Boolean(data.recommended);
+  const linked = Boolean(data.linked);
 
   return (
     <div
       className={`org-card org-card-${node.kind}`}
       data-selected={selected}
+      data-linked={linked}
       data-dimmed={dimmed}
       data-recommended={recommended}
       style={{ ["--status" as string]: accent }}
     >
-      <Handle type="target" position={Position.Top} className="org-handle" />
+      <Handle type="target" position={Position.Left} className="org-handle" />
       <div className="org-card-mark" aria-hidden>
         {node.kind === "human" ? "◉" : node.kind === "group" ? "▣" : initial(node.name)}
       </div>
@@ -29,7 +31,7 @@ export function OrgNode({ data, selected }: NodeProps<OrgFlowNode>) {
         <div className="org-card-title">{node.title ?? KIND_LABEL[node.kind]}</div>
       </div>
       <div className="org-card-status">{STATUS_LABEL[node.status]}</div>
-      <Handle type="source" position={Position.Bottom} className="org-handle" />
+      <Handle type="source" position={Position.Right} className="org-handle" />
     </div>
   );
 }

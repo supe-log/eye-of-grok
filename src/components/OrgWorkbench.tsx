@@ -29,6 +29,7 @@ import { KIND_LABEL, STATUS_COLOR, STATUS_LABEL, relativeTime } from "@/lib/stat
 import { Logo } from "./Logo";
 import { MermaidView } from "./MermaidView";
 import { OrgCanvas } from "./OrgCanvas";
+import { ThemeToggle } from "./ThemeToggle";
 
 type Tab = "inspect" | "edit" | "mermaid" | "live";
 
@@ -44,7 +45,8 @@ export function OrgWorkbench({
   );
   const [hygiene, setHygiene] = useState(false);
   const [view, setView] = useState<OrgMapView>("all");
-  const [tab, setTab] = useState<Tab>("live");
+  const [tab, setTab] = useState<Tab>("inspect");
+  const [showTools, setShowTools] = useState(false);
   const [ingestToken, setIngestToken] = useState("hackathon-demo");
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -107,6 +109,7 @@ export function OrgWorkbench({
   );
 
   const reset = useCallback(async () => {
+    if (!window.confirm("Replace this map with the starter roster?")) return;
     setLoadError(null);
     const res = await fetch(`/api/orgs/${orgId}?reset=1`, { cache: "no-store" });
     if (!res.ok) {
@@ -140,23 +143,20 @@ export function OrgWorkbench({
             warn={capacity.botsAndGroups > 30}
           />
           <Gauge
-            label="Over-cap spaces"
+            label="Over-cap"
             value={String(capacity.overstaffedGroupIds.length)}
             warn={capacity.overstaffedGroupIds.length > 0}
           />
           <Gauge label="Updated" value={relativeTime(snapshot.pushedAt)} />
-          <Gauge label="Source" value={snapshot.source.replaceAll("_", " ")} />
-          <Gauge
-            label="Tools"
-            value={snapshot.tools?.length ? String(snapshot.tools.length) : "—"}
-          />
         </div>
         <div className="top-actions">
+          <ThemeToggle />
           <div className="view-pills">
             <button
               type="button"
               className="pill"
               data-on={view === "all"}
+              aria-pressed={view === "all"}
               onClick={() => setView("all")}
             >
               All links
@@ -165,6 +165,7 @@ export function OrgWorkbench({
               type="button"
               className="pill"
               data-on={view === "reports"}
+              aria-pressed={view === "reports"}
               onClick={() => setView("reports")}
             >
               Reporting line
@@ -173,6 +174,7 @@ export function OrgWorkbench({
               type="button"
               className="pill"
               data-on={view === "spaces"}
+              aria-pressed={view === "spaces"}
               onClick={() => setView("spaces")}
             >
               Spaces
@@ -186,6 +188,17 @@ export function OrgWorkbench({
             />
             Flag stale
           </label>
+          {snapshot.tools && snapshot.tools.length > 0 && (
+            <button
+              type="button"
+              className="pill"
+              data-on={showTools}
+              aria-pressed={showTools}
+              onClick={() => setShowTools((open) => !open)}
+            >
+              {snapshot.tools.length} tools
+            </button>
+          )}
           <button type="button" className="btn btn-ghost" onClick={() => void reset()}>
             Reset starter
           </button>
@@ -197,7 +210,7 @@ export function OrgWorkbench({
 
       {loadError && <p className="panel-error">{loadError}</p>}
       {saveMsg && <p className="muted">{busy ? "Saving…" : saveMsg}</p>}
-      {snapshot.tools && snapshot.tools.length > 0 && (
+      {showTools && snapshot.tools && snapshot.tools.length > 0 && (
         <div className="chip-row">
           {snapshot.tools.map((tool) => (
             <span key={tool} className="chip">
@@ -208,7 +221,7 @@ export function OrgWorkbench({
       )}
 
       <section className="stage">
-        <div className="canvas">
+        <div className="canvas" data-view={view}>
           <OrgCanvas
             snapshot={snapshot}
             view={view}
@@ -225,9 +238,9 @@ export function OrgWorkbench({
           <nav className="tabs">
             {(
               [
-                ["live", "Live"],
                 ["inspect", "Inspect"],
                 ["edit", "Edit"],
+                ["live", "Share"],
                 ["mermaid", "Mermaid"],
               ] as const
             ).map(([id, label]) => (
@@ -282,6 +295,33 @@ export function OrgWorkbench({
         </aside>
       </section>
     </main>
+  );
+}
+
+function RosterList({
+  title,
+  nodes,
+  onSelect,
+}: {
+  title: string;
+  nodes: OrgSnapshot["nodes"];
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <>
+      <h3>{title}</h3>
+      <ul className="roster">
+        {nodes.map((node) => (
+          <li key={node.id}>
+            <button type="button" onClick={() => onSelect(node.id)}>
+              <i style={{ background: STATUS_COLOR[node.status] }} />
+              <span>{node.name}</span>
+              <em>{node.title ?? KIND_LABEL[node.kind]}</em>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -372,7 +412,14 @@ function InspectPanel({
             </select>
           </label>
           {selected.kind !== "human" && (
-            <button type="button" className="btn btn-ghost" onClick={() => onRemove(selected.id)}>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => {
+                if (!window.confirm(`Remove ${selected.name} from the map?`)) return;
+                onRemove(selected.id);
+              }}
+            >
               Remove from map
             </button>
           )}
@@ -380,18 +427,16 @@ function InspectPanel({
       ) : (
         <p className="muted">Click a node, or add one from Edit.</p>
       )}
-      <h3>Your setup</h3>
-      <ul className="roster">
-        {snapshot.nodes.map((node) => (
-          <li key={node.id}>
-            <button type="button" onClick={() => onSelect(node.id)}>
-              <i style={{ background: STATUS_COLOR[node.status] }} />
-              <span>{node.name}</span>
-              <em>{node.title ?? KIND_LABEL[node.kind]}</em>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <RosterList
+        title="People & bots"
+        nodes={snapshot.nodes.filter((node) => node.kind !== "group")}
+        onSelect={onSelect}
+      />
+      <RosterList
+        title="Spaces"
+        nodes={snapshot.nodes.filter((node) => node.kind === "group")}
+        onSelect={onSelect}
+      />
     </div>
   );
 }

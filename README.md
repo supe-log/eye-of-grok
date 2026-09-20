@@ -1,6 +1,6 @@
 # Eye of Grok
 
-A **human-facing org map** for a Grok Bot account. The Chief of Staff (Casey, or a cartographer Bot) pushes the roster. People **see** the company and **judge** a lean-up plan. Nothing in this app hides or deletes a real Bot.
+A **human-facing org map** for a Grok Bot account. The Chief of Staff (or any cartographer Bot) pushes the roster. People **see** the company and **judge** a lean-up plan. Nothing in this app hides or deletes a real Bot.
 
 Repo: [github.com/supe-log/eye-of-grok](https://github.com/supe-log/eye-of-grok)  
 Live: [https://eye-of-grok.vercel.app](https://eye-of-grok.vercel.app)
@@ -9,7 +9,7 @@ This is the gap xAI left on purpose. In [Designing Grok Bot](https://x.ai/news/d
 
 - **Full overview (start here):** [OVERVIEW.md](OVERVIEW.md)
 - Architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
-- Teammates (clone / push): [TEAM.md](TEAM.md)
+- Contributing (clone / push): [TEAM.md](TEAM.md)
 - Demo walkthrough: [DEMO.md](DEMO.md)
 
 Grok Bot scales like a company:
@@ -29,7 +29,7 @@ flowchart TD
   Human -->|"pastes prompt"| CoS[Chief of Staff in Grok Bot]
   CoS -->|"POST /api/orgs/slug/snapshot<br/>Bearer INGEST_TOKEN"| API[Next.js ingest]
   Human -->|"Edit in the browser"| API
-  Laptop[Casey on this Mac] -->|"POST /api/local/snapshot<br/>loopback only"| API
+  Laptop[Bot on this machine] -->|"POST /api/local/snapshot<br/>loopback only"| API
   CloudCoS[Phone or cloud Bot] -->|"POST snapshot or MCP /api/mcp"| API
   API -->|"upsert latest + append revision"| Neon[(Neon Postgres<br/>eye-of-grok)]
   Neon -->|"GET /api/orgs/slug every 2.5s"| Map
@@ -65,7 +65,7 @@ Until xAI ships a roster API, every live picture is **Bot as cartographer**: nam
 | Door | When to use | Keys |
 | --- | --- | --- |
 | **Edit** in the browser | You type the sidebar | None |
-| **Local POST** `http://127.0.0.1:3002/api/local/snapshot` | Casey on **this Mac** (local egress) | None |
+| **Local POST** `http://127.0.0.1:3002/api/local/snapshot` | Bot on **this machine** (local egress) | None |
 | **Bearer POST** `/api/orgs/mine/snapshot` | Bot or human off this laptop | `INGEST_TOKEN` + a **public HTTPS** site |
 | **MCP** `/api/mcp` | Same handlers, remote Bot | `INGEST_TOKEN` + public HTTPS. Cloud MCP **cannot** see localhost |
 
@@ -77,13 +77,13 @@ Until xAI ships a roster API, every live picture is **Bot as cartographer**: nam
 | --- | --- |
 | Canvas-style map (reporting line / spaces), inspect, **Flag stale** | Grok 4.6 analyze UI (keep / hide / merge / close-group + onboarding blurb) — **API exists**, UI hidden until we have an xAI key and the team turns it on |
 | Edit the roster in the browser | Official “list my bots” import (does not exist) |
-| Live local ingest from Casey on this Mac | Auto-read `~/Library/Application Support/Grok Bot` |
+| Live local ingest from a Bot on this machine | Auto-read `~/Library/Application Support/Grok Bot` |
 | Mermaid export of the current graph | Lean “after” Mermaid from analyze |
 | REST + MCP ingest | Hide / delete against real Grok Bot |
 | Capacity gauges (`/50`, over-cap spaces) | Multi-tenant / many humans on one map |
 | Durable Neon snapshots + revision history per slug | Daily routine that re-pushes from Grok Bot |
 
-Default org id is `mine`. First paint is **Logan May's real Grok Bot layout** from this Mac: Log (Chief of Staff), sidebar sections (GT, Harness, Factory, Ops, Writing App, Personal), 21 bots, and 11 group rooms. Casey can POST a newer snapshot any time.
+Default org id is `mine`. The demo seed is a full sidebar sample (owner, Chief of Staff, specialists, group rooms). A Bot can POST a newer snapshot any time.
 
 ---
 
@@ -97,7 +97,7 @@ This is the product: one website, many orgs. A person claims a slug, copies a pr
 
 No xAI key. No Grok Bot login. The Bot is the cartographer.
 
-Logan May's demo roster stays at `/u/mine`.
+The sample demo roster stays at `/u/mine`.
 
 ## Run
 
@@ -108,13 +108,13 @@ npm install
 npm run dev
 ```
 
-On Logan's Mac the app is already bound to **[http://localhost:3002](http://localhost:3002)** (3000 was taken). Home is the share page. Demo map: [http://localhost:3002/u/mine](http://localhost:3002/u/mine).
+`npm run dev` prints the local URL. If 3000 is taken, Next picks another port (this repo is often run at **[http://localhost:3002](http://localhost:3002)**). Home is the share page. Demo map: `/u/mine`.
 
 After deploy, set `NEXT_PUBLIC_APP_URL` to the public origin so prompts print the right host.
 
-**Live tab → Copy Casey prompt** and paste it into Casey on this Mac. The map polls `GET /api/orgs/mine` every 2.5s and redraws.
+**Live tab → copy the local prompt** and paste it into the Chief of Staff on this machine. The map polls `GET /api/orgs/mine` every 2.5s and redraws.
 
-90-second walkthrough: [DEMO.md](DEMO.md). This-Mac ingest: [LOCAL.md](LOCAL.md). Teammates: [TEAM.md](TEAM.md). File-level architecture: [ARCHITECTURE.md](ARCHITECTURE.md).
+Walkthrough: [DEMO.md](DEMO.md). Local ingest: [LOCAL.md](LOCAL.md). Contributing: [TEAM.md](TEAM.md). File-level architecture: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -124,7 +124,7 @@ The **map does not need any vendor key.** Do not send xAI, Cursor, or Grok Bot s
 
 | Variable | Required to see the map? | What it is for |
 | --- | --- | --- |
-| *(nothing)* | No | Local site + Edit + Casey POST to loopback |
+| *(nothing)* | No | Local site + Edit + Bot POST to loopback |
 | `INGEST_TOKEN` | Only off-machine writes | Bearer for `POST /api/orgs/:id/snapshot` and MCP tools that write. Local default: `hackathon-demo` |
 | `XAI_API_KEY` or `GROK_API_KEY` | No | Parked analyze pass (`POST /api/orgs/mine/analyze`, Grok 4.6). Without it, a heuristic still runs if something calls that route |
 | `GROK_MODEL` / `XAI_BASE_URL` | No | Optional analyze overrides. Defaults in `.env.example` |
@@ -136,8 +136,8 @@ Copy `.env.example` → `.env.local` only if you are turning analyze on or chang
 
 **Do you need a live public website?**
 
-- **Logan + Casey on this laptop:** no. `npm run dev` on :3002 is the live picture.
-- **Teammates, a phone, or a Bot whose tools run only in the cloud:** yes. Deploy (e.g. Vercel), set `INGEST_TOKEN`, then Casey POSTs to `https://<host>/api/orgs/mine/snapshot` with `Authorization: Bearer <token>`, or uses MCP at `https://<host>/api/mcp`.
+- **Same machine as the Bot (local egress):** no. `npm run dev` plus `POST /api/local/snapshot` is enough.
+- **A phone, teammate, or a Bot whose tools run only in the cloud:** yes. Deploy (e.g. Vercel), set `INGEST_TOKEN`, then the Bot POSTs to `https://<host>/api/orgs/<slug>/snapshot` with `Authorization: Bearer <token>`, or uses MCP at `https://<host>/api/mcp`.
 
 Org maps persist in Neon Postgres (`org_snapshots` plus a revision row on every save). Leave and come back, or open the same slug from another device — the latest snapshot is still there. Local fallback without `DATABASE_URL` is still `data/orgs/` (gitignored).
 
@@ -147,12 +147,12 @@ Org maps persist in Neon Postgres (`org_snapshots` plus a revision row on every 
 
 One-way push. The site does not talk back into Grok Bot.
 
-1. Casey lists every Bot and group it knows: name, title, status (`active` \| `stale` \| `hidden` \| `deprecated` \| `duplicate`), who they report to, which spaces they sit in.
-2. Include Logan as `kind: "human"`.
+1. The Chief of Staff lists every Bot and group it knows: name, title, status (`active` \| `stale` \| `hidden` \| `deprecated` \| `duplicate`), who they report to, which spaces they sit in.
+2. Include the account owner as `kind: "human"`.
 3. POST that JSON. No transcripts, memory text, API keys, or file contents.
-4. Eye of Grok replaces `mine` and the map updates.
+4. Eye of Grok replaces that org's snapshot and the map updates.
 
-On this Mac, Grok Bot already has **local egress** and local tools allowed. Casey should POST to:
+If Grok Bot has **local egress**, it can POST to:
 
 ```http
 POST http://127.0.0.1:3002/api/local/snapshot
@@ -169,10 +169,10 @@ No bearer on loopback. Prompt text: **Live** tab, or `GET http://127.0.0.1:3002/
 
 | Method | Path | Auth | What |
 | --- | --- | --- | --- |
-| GET | `/api/orgs/mine` | no | Current map (seeds Logan if empty) |
-| GET | `/api/orgs/mine?reset=1` | no | Back to Logan-only starter |
-| POST | `/api/local/snapshot` | loopback only | Replace Logan's graph (this Mac) |
-| GET | `/api/local/snapshot` | no | Casey prompt + ingest URL |
+| GET | `/api/orgs/mine` | no | Current map (seeds the demo fixture if empty) |
+| GET | `/api/orgs/mine?reset=1` | no | Reset that org to the starter fixture |
+| POST | `/api/local/snapshot` | loopback only | Replace the `mine` graph from this machine |
+| GET | `/api/local/snapshot` | no | Local Bot prompt + ingest URL |
 | POST | `/api/orgs/mine/snapshot` | Bearer *or* loopback | Replace the graph from elsewhere |
 | GET | `/api/orgs/mine/mermaid` | no | Flowchart export |
 | POST | `/api/orgs/mine/analyze` | no | Parked: keep / hide / merge / close-group + onboarding |
@@ -242,7 +242,7 @@ A dashboard that becomes another thing to manage loses. Write-path stays with th
 
 ## Shortcomings we already know
 
-- **Data is always incomplete.** Hidden Bots, groups Casey is not in, and stale memory will be missing or wrong.
+- **Data is always incomplete.** Hidden Bots, groups the Chief of Staff is not in, and stale memory will be missing or wrong.
 - **No official roster API.** Live integration is “Bot as cartographer,” not a sync.
 - **Freshness.** A snapshot ages the moment someone creates a Bot in the app. We show `pushedAt`. A later stretch is a routine that re-pushes.
 - **Grok can hallucinate cleanup.** That is why analyze is gated on the snapshot and parked in the UI.
@@ -251,11 +251,11 @@ A dashboard that becomes another thing to manage loses. Write-path stays with th
 
 ---
 
-## Out of scope (this weekend)
+## Out of scope
 
-Live hide/delete in Grok Bot, scraping the macOS app, unofficial CLIs, full auth / multi-tenant, historical diffs, Agent SDK project layout, Granola / Slack sync.
+Live hide/delete in Grok Bot, scraping the macOS app, unofficial CLIs, full auth / multi-tenant, Agent SDK project layout, and third-party calendar / Slack sync.
 
-Do not turn the Analyze UI back on unless someone adds an xAI key and the team agrees.
+The Analyze UI stays off unless an xAI key is configured and that surface is turned back on.
 
 ---
 
@@ -270,6 +270,6 @@ Next.js 16 App Router, React 19, Tailwind 4, `@dagrejs/dagre`, `mermaid`, `zod`,
 | Doc | What |
 | --- | --- |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | File map, request flow, schema notes |
-| [LOCAL.md](LOCAL.md) | This-Mac live ingest (Casey → :3002) |
-| [DEMO.md](DEMO.md) | 90-second walkthrough |
-| [TEAM.md](TEAM.md) | Clone, push, what not to do |
+| [LOCAL.md](LOCAL.md) | Localhost ingest and public write paths |
+| [DEMO.md](DEMO.md) | Short walkthrough |
+| [TEAM.md](TEAM.md) | Clone, run, push |

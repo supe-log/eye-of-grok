@@ -2,11 +2,11 @@
 
 Public share: people claim `/u/<slug>` on the home page and paste **Copy Bot prompt** into their Grok Bot. Writes go to `POST /api/orgs/<slug>/snapshot` with bearer `hackathon-demo`. MCP is `/api/mcp`.
 
-# This Mac only (localhost:3002)
+# Localhost only
 
 Grok Bot **cloud MCP cannot reach** `localhost`. Do not add `http://127.0.0.1:3002/api/mcp` as a remote MCP server.
 
-On Logan's Mac, Grok Bot has **local egress** (`localEgressAllowed`, local tools always allowed). A Bot can POST to the local API. Eye of Grok polls `GET /api/orgs/mine` every 2.5s and redraws.
+If Grok Bot has **local egress** (`localEgressAllowed`, local tools allowed), a Bot can POST to the local API. Eye of Grok polls `GET /api/orgs/mine` every 2.5s and redraws.
 
 There is **no official roster API**. Encrypted app data under `~/Library/Application Support/Grok Bot` is not imported.
 
@@ -21,9 +21,9 @@ Loopback only (`127.0.0.1`, `localhost`, IPv4-mapped `::ffff:127.0.0.1`). No bea
 
 Same body as `POST /api/orgs/mine/snapshot`. Always written to org `mine`.
 
-## What to tell Casey
+## What to tell the Chief of Staff
 
-Open the **Live** tab and click **Copy Casey prompt**, or `GET http://127.0.0.1:3002/api/local/snapshot` and use the `prompt` field.
+Open the **Live** tab and copy the local prompt, or `GET http://127.0.0.1:3002/api/local/snapshot` and use the `prompt` field.
 
 ## Where the key is
 
@@ -35,7 +35,7 @@ There is **no xAI key** on this project. The only secret for Bot write access is
 | [`.env.local`](.env.local) | Does **not** exist yet. Create it only if you want a different token |
 | [`src/lib/auth.ts`](src/lib/auth.ts) | `process.env.INGEST_TOKEN ?? "hackathon-demo"` — if env is missing, this default is used |
 
-On **this Mac**, Casey POSTs to `/api/local/snapshot` and needs **no token**.  
+On **loopback**, POST `/api/local/snapshot` needs **no token**.  
 On **phone / cloud / any other machine**, the Bot must send:
 
 ```http
@@ -46,9 +46,9 @@ Authorization: Bearer hackathon-demo
 
 ## Anywhere (phone, other computers, cloud Bot)
 
-`localhost:3002` is this laptop only. Grok Bot’s MCP client and the phone app **cannot** see it.
+`localhost:3002` is this machine only. Grok Bot’s MCP client and the phone app **cannot** see it.
 
-**Easiest live path:** put the site on a public HTTPS URL, then give Log that URL + the bearer. Do **not** use unofficial Grok Bot CLIs (they only work on this Mac’s session and do not help the phone). Giving the GitHub repo lets a Bot *read the schema and the last committed roster*; it does not give a live map.
+**Easiest live path:** put the site on a public HTTPS URL, then give the Chief of Staff that URL + the bearer. Do **not** use unofficial Grok Bot CLIs (they depend on a local session and do not help a phone). Giving the GitHub repo lets a Bot *read the schema*; it does not give a live map.
 
 | Path | Works from phone? | Laptop must stay on? | What you give the Bot |
 | --- | --- | --- | --- |
@@ -67,7 +67,7 @@ Header:   Authorization: Bearer hackathon-demo
 MCP:      https://YOUR-HOST/api/mcp   (same bearer on writes)
 ```
 
-Paste that card into Log. Do not add `http://localhost:3002/api/mcp` as a remote MCP server.
+Paste that card into the Chief of Staff. Do not add `http://localhost:3002/api/mcp` as a remote MCP server.
 
 ## What will not work
 

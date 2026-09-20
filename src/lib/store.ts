@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { ensureSnapshotSchema, getSql, hasDatabase } from "./db";
 import { createEmptySetup } from "./empty-setup";
+import { createLogOrgFixture } from "./log-org";
 import { createMySetupFixture } from "./my-setup";
 import { isValidOrgId, normalizeOrgId } from "./org-id";
 import { orgSnapshotSchema } from "./schema";
@@ -14,6 +15,7 @@ import {
 const DATA_DIR = path.join(process.cwd(), "data", "orgs");
 
 function starterFor(orgId: string): OrgSnapshot {
+  if (orgId === "log") return createLogOrgFixture();
   if (orgId === DEFAULT_ORG_ID) return createMySetupFixture();
   return createEmptySetup(orgId);
 }

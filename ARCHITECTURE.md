@@ -19,7 +19,7 @@ This app is the map you wish the sidebar was.
 | Mermaid export | Multi-tenant / many humans |
 | REST + MCP ingest (MCP only after a public URL) | xAI key |
 
-Default org id is `mine`. Starter graph is **Logan**. The full sidebar lands when Casey (or you) POSTs a snapshot from this Mac.
+Default org id is `mine`. The demo seed is a full sidebar sample. A Bot (or Edit in the browser) can replace it with a live snapshot.
 
 ## Data model (source of truth)
 
@@ -63,13 +63,13 @@ Do not store transcripts or raw memory.
 ```mermaid
 flowchart LR
   Human[Human in the UI] -->|Edit| API
-  Casey[Casey on this Mac] -->|POST /api/local/snapshot| API
+  CoS[Chief of Staff on this machine] -->|POST /api/local/snapshot| API
   API[Next.js API] --> Store[Neon org_snapshots]
   Store --> Map[Canvas-style DAG polls every 2.5s]
   Store --> Mermaid[Mermaid export]
 ```
 
-On this laptop, **do not** point Grok Bot cloud MCP at `http://127.0.0.1:3002/api/mcp`. The MCP client runs in the cloud and cannot see localhost. Casey uses **local egress** + REST. MCP is for a later public HTTPS host.
+**Do not** point Grok Bot cloud MCP at `http://127.0.0.1:3002/api/mcp`. The MCP client runs in the cloud and cannot see localhost. Local ingest is **local egress** + REST. MCP is for a public HTTPS host.
 
 Local snapshots live under `data/orgs/` (gitignored). First `GET /api/orgs/mine` seeds [`src/lib/my-setup.ts`](src/lib/my-setup.ts).
 
@@ -79,7 +79,8 @@ Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <ING
 
 | Path | Role |
 | --- | --- |
-| `src/app/page.tsx` | Loads `mine` and renders the map |
+| `src/app/page.tsx` | Share / claim landing page |
+| `src/app/u/[orgId]/page.tsx` | Public map for a claimed slug |
 | `src/components/OrgWorkbench.tsx` | Map, inspect, edit, mermaid, connect |
 | `src/components/OrgCanvas.tsx` | Flat reporting-line / spaces diagram |
 | `src/lib/layout-graph.ts` | dagre layout for the canvas diagram |
@@ -90,7 +91,7 @@ Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <ING
 | `src/lib/fixture.ts` | Old messy-startup sample (unused in UI) |
 | `src/lib/analyze.ts` | Parked Grok / heuristic lean-up |
 | `src/app/api/orgs/[id]/*` | REST |
-| `src/app/api/local/snapshot/route.ts` | Loopback ingest for this Mac |
+| `src/app/api/local/snapshot/route.ts` | Loopback ingest |
 | `src/app/api/mcp/route.ts` | Streamable HTTP MCP |
 | `src/lib/mcp-server.ts` | `push_org_snapshot`, `get_org_view`, `analyze_org` |
 
@@ -105,7 +106,7 @@ Writes to `POST /api/orgs/:id/snapshot` and MCP need `Authorization: Bearer <ING
 
 ## Stack
 
-Next.js 16 App Router, React 19, Tailwind 4, `@dagrejs/dagre`, `mermaid`, `zod`, `@modelcontextprotocol/sdk`. Node 22+ (dev is 26 here). No Supabase. No xAI key for the visualizer MVP.
+Next.js 16 App Router, React 19, Tailwind 4, `@xyflow/react`, `@dagrejs/dagre`, `mermaid`, `zod`, `@modelcontextprotocol/sdk`. Node 22+. No Supabase. No xAI key for the visualizer.
 
 ## Later (analyzer)
 

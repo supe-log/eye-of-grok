@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Landing() {
   return (
@@ -9,6 +10,7 @@ export function Landing() {
       <div className="landing-nav">
         <Logo href="/" />
         <div className="landing-nav-links">
+          <ThemeToggle />
           <Link href="/u/mine" className="landing-nav-link">Live demo</Link>
           <Link href="/claim" className="btn btn-ghost landing-nav-cta">Claim map</Link>
         </div>
