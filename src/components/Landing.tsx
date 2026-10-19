@@ -12,6 +12,7 @@ export function Landing() {
         <div className="landing-nav-links">
           <ThemeToggle />
           <Link href="/u/mine" className="landing-nav-link">Live demo</Link>
+          <Link href="/start" className="landing-nav-link">Quick start</Link>
           <Link href="/claim" className="btn btn-ghost landing-nav-cta">Claim map</Link>
         </div>
       </div>

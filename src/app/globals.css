@@ -1519,3 +1519,140 @@ code {
     align-items: flex-start;
   }
 }
+
+/* Quick-start harness: intake and team console */
+.team-shell {
+  min-height: 100dvh;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 20px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.intake-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+.team-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.team-head .muted {
+  max-width: 420px;
+  margin: 0;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.bot-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.bot-card .body,
+.bot-card .muted {
+  margin: 0;
+}
+
+.bot-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.bot-card details summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.bot-feedback {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.bot-feedback input,
+.bot-feedback select {
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.bot-feedback input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.gap-form input {
+  flex: 1 1 280px;
+}
+
+.status-tag {
+  flex: none;
+  border: 1px solid var(--line-2);
+  padding: 3px 7px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.status-tag[data-status="draft_only"],
+.status-tag[data-status="approved"] {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.status-tag[data-status="autonomous"],
+.status-tag[data-status="applied"] {
+  border-color: var(--good);
+  color: var(--good);
+}
+
+.status-tag[data-status="rejected"] {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.power-flag {
+  color: var(--warn);
+}
+
+.rule-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .intake-row {
+    grid-template-columns: 1fr;
+  }
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}

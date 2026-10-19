@@ -1,6 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { analyzeOrg } from "./analyze-org";
+import { addFeedback, getHarness, runRetro } from "./harness-store";
+import { feedbackInputSchema } from "./harness-types";
+import { botDescription } from "./plan-export";
 import { snapshotToMermaid } from "./mermaid";
 import { orgSnapshotSchema } from "./schema";
 import { getOrg, upsertOrg } from "./store";
@@ -95,6 +98,83 @@ export function createOrgMcpServer(): McpServer {
       const result = await analyzeOrg(org);
       return {
         content: [{ type: "text", text: JSON.stringify(result) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    "get_team_plan",
+    {
+      title: "Get team plan",
+      description:
+        "Read the designed Bot team for a business: every Bot's name, title, description with rules, autonomy, skills, routines (disabled), and group chats. Build the team in Grok Bot from this.",
+      inputSchema: {
+        orgId: z.string(),
+      },
+    },
+    async ({ orgId }) => {
+      const state = await getHarness(orgId);
+      if (!state) {
+        return {
+          isError: true,
+          content: [{ type: "text", text: `plan_not_found: ${orgId}. Create one at /start.` }],
+        };
+      }
+      const { plan } = state;
+      const bots = plan.bots.map((bot) => ({ ...bot, description: botDescription(bot, plan) }));
+      return {
+        content: [{ type: "text", text: JSON.stringify({ ...plan, bots }) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    "record_feedback",
+    {
+      title: "Record feedback",
+      description:
+        "Log how a Bot did on a task (source=bot after finishing work, or source=owner for the human's verdict). Feeds the weekly retro.",
+      inputSchema: {
+        orgId: z.string(),
+        feedback: feedbackInputSchema,
+      },
+    },
+    async ({ orgId, feedback }) => {
+      const saved = await addFeedback(orgId, feedback);
+      return {
+        content: [{ type: "text", text: JSON.stringify({ ok: true, id: saved.id }) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    "run_retro",
+    {
+      title: "Run retro",
+      description:
+        "Turn feedback since the last retro into proposed changes (new rules, autonomy changes, new Bots). The owner approves them in Eye of Grok; nothing changes in Grok Bot until then.",
+      inputSchema: {
+        orgId: z.string(),
+      },
+    },
+    async ({ orgId }) => {
+      const proposals = await runRetro(orgId);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              created: proposals.length,
+              proposals: proposals.map(({ id, kind, title, why, addsPowers }) => ({
+                id,
+                kind,
+                title,
+                why,
+                addsPowers,
+              })),
+            }),
+          },
+        ],
       };
     },
   );

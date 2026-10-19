@@ -165,6 +165,17 @@ No bearer on loopback. Prompt text: **Live** tab, or `GET http://127.0.0.1:3002/
 
 ---
 
+## Quick start: design, install, and improve a Bot team
+
+For a business setting up Grok Bot for the first time (the demo is a small insurance agency). Full plan and research: [docs/QUICKSTART-HARNESS.md](docs/QUICKSTART-HARNESS.md).
+
+1. Open `/start`. Enter the business name, industry, tools, what slips today, and house rules. Eye of Grok designs a Chief of Staff plus specialists, each with rules, an autonomy level (draft only / ask first / autonomous), skills, and routines that start switched off.
+2. On `/u/<slug>/team`, copy the **setup prompt** into a new Bot in Grok Bot. It reads `GET /api/orgs/<slug>/plan`, builds the Bots and group chats, and pushes the real roster to the map. `?format=recipes` returns one Grok Bot template recipe per Bot to publish with Share as Template.
+3. Rate the work: thumbs up or down per Bot, or report a gap ("nobody handles claims"). Bots log their own outcomes with `record_feedback`.
+4. Run the retro (the Ops Bot does it on Fridays). It proposes new rules, autonomy changes, and new Bots. The owner approves; the plan version bumps; the Chief of Staff applies approved changes in Grok Bot and marks them live. Changes that add powers are always flagged.
+
+Demo: `/u/demo-insurance-agency/team`.
+
 ## API
 
 | Method | Path | Auth | What |
@@ -176,7 +187,15 @@ No bearer on loopback. Prompt text: **Live** tab, or `GET http://127.0.0.1:3002/
 | POST | `/api/orgs/mine/snapshot` | Bearer *or* loopback | Replace the graph from elsewhere |
 | GET | `/api/orgs/mine/mermaid` | no | Flowchart export |
 | POST | `/api/orgs/mine/analyze` | no | Parked: keep / hide / merge / close-group + onboarding |
-| GET/POST | `/api/mcp` | Bearer on writes | `push_org_snapshot`, `get_org_view`, `analyze_org` — needs a public URL |
+| POST | `/api/start` | no (Bearer to overwrite an existing team) | Intake → team plan v1 + setup prompt |
+| GET | `/api/orgs/<slug>/plan` | no | Team plan; `?format=recipes` or `?format=prompt` |
+| GET | `/api/orgs/<slug>/team` | no | Plan + recent feedback + proposals |
+| GET/POST | `/api/orgs/<slug>/feedback` | Bearer *or* loopback on POST | Owner or Bot feedback |
+| POST | `/api/orgs/<slug>/retro` | Bearer *or* loopback | Turn new feedback into proposals |
+| GET | `/api/orgs/<slug>/changes?status=` | no | Proposals: open, approved, rejected, applied |
+| POST | `/api/orgs/<slug>/changes/<id>` | Bearer *or* loopback | `{"decision":"approved"\|"rejected"}` |
+| POST | `/api/orgs/<slug>/changes/<id>/applied` | Bearer *or* loopback | Chief of Staff confirms a change is live |
+| GET/POST | `/api/mcp` | Bearer on writes | `push_org_snapshot`, `get_org_view`, `analyze_org`, `get_team_plan`, `record_feedback`, `run_retro` — needs a public URL |
 
 MCP tools wrap the same handlers. A public MCP without a token is an open write — use the bearer token off-loopback.
 
